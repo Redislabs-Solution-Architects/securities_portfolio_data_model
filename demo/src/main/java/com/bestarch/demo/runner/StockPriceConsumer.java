@@ -10,8 +10,6 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.stream.MapRecord;
-import org.springframework.data.redis.connection.stream.RecordId;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.stereotype.Component;
 
@@ -27,9 +25,6 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 	@Value("${price.update.stream}")
 	private String priceUpdateStream;
 
-	@Autowired
-	private RedisTemplate<String, String> redisTemplate;
-	
 	@Autowired
 	private StatefulRedisModulesConnection<String, String> connection;
 
@@ -48,7 +43,6 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 		RedisTimeSeriesCommands<String, String> ts = connection.sync();
 		System.out.println(message);
 		Map<String, String> values = message.getValue();
-		RecordId recordId = message.getId();
 		try {
 			StockPriceStreamRecord rec = objectMapper.convertValue(values, StockPriceStreamRecord.class);
 			ts.tsAdd("price_history_ts:"+rec.getTicker(), Sample.of(rec.getDateInUnix(), rec.getPrice()));

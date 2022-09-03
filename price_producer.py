@@ -17,7 +17,7 @@ if __name__ == '__main__':
             conn.xadd(price_stream_name,
                       {"ticker": "HDFCBANK", "datetime": data['DateTime'][i], "dateInUnix": dateInUnix,
                        "price": data['Price'][i]})
-            time.sleep(2)
+            time.sleep(1)
         print("Trading recordset generated")
     except Exception as inst:
         print(type(inst))

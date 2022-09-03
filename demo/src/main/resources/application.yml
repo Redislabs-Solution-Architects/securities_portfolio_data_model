@@ -6,17 +6,9 @@ spring:
   main:
     allow-circular-references: true
     
-    
-server:
-  servlet:
-    session:
-      timeout: 300
-
-  
 price:
   update:
     stream: price_update_stream
-
 
 logging:
   level:
