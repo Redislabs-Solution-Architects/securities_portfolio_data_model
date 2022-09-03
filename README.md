@@ -122,3 +122,8 @@ Get latest price for a ticker
 Get the price info between two dates/times for a ticker
     
     TS.RANGE price_history_ts:HDFCBANK 1352332800 1392602800
+
+Create rule for daily average price for a particular security
+
+    TS.CREATERULE price_history_ts:HDFCBANK price_history_ts:HDFCBANK_AGGR AGGREGATION avg 86400000
+
