@@ -101,8 +101,10 @@ and [files/MARUTI_intraday.csv](https://github.com/bestarch/sample_trading_data_
 * These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
 in '/demo' folder and written using Java, Spring etc.
 This consumer performs following responsibilities:
-1. Consuming the pricing data, remodeling it and disaggregating it based on the stock ticker
-2. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
+
+  1. Consuming the pricing data, remodeling it and disaggregating it based on the stock ticker
+  2. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
+  3. Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
 
 #### Create Time series key for tracking price for a security
     TS.CREATE price_history_ts:HDFCBANK ticker hdfcbank DUPLICATE_POLICY LAST
