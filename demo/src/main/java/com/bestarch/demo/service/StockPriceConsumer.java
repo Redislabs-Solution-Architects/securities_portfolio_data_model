@@ -1,4 +1,4 @@
-package com.bestarch.demo.runner;
+package com.bestarch.demo.service;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.stream.MapRecord;
@@ -21,6 +23,8 @@ import com.redis.lettucemod.timeseries.Sample;
 
 @Component
 public class StockPriceConsumer implements StreamListener<String, MapRecord<String, String, String>> {
+	
+	private Logger logger = LoggerFactory.getLogger(StockPriceConsumer.class);
 
 	@Value("${price.update.stream}")
 	private String priceUpdateStream;
@@ -41,16 +45,14 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 	@Override
 	public void onMessage(MapRecord<String, String, String> message) {
 		RedisTimeSeriesCommands<String, String> ts = connection.sync();
-		System.out.println(message);
+		logger.info(message.toString());
 		Map<String, String> values = message.getValue();
 		try {
 			StockPriceStreamRecord rec = objectMapper.convertValue(values, StockPriceStreamRecord.class);
 			ts.tsAdd("price_history_ts:"+rec.getTicker(), Sample.of(rec.getDateInUnix(), rec.getPrice()));
 		} catch (Exception e) {
-			System.out.println("An exception occurred in parsing. Ignoring the error");
+			logger.error("An exception occurred in parsing. Ignoring the error");
 		}
-		System.out.println();
-
 	}
 
 }

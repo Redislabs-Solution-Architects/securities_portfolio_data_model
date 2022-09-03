@@ -11,7 +11,6 @@ public class DemoApplication {
 
 	public static void main(String[] args) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 		SpringApplication.run(DemoApplication.class, args);
-		System.out.println("\n");
 	}
 	
 }
