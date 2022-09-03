@@ -1,4 +1,4 @@
-# sample_trading_data_model
+# Sample Trading data model
 
 ### Data model
 
