@@ -129,4 +129,7 @@ dmypy.json
 .pyre/
 .idea/
 
-demo/
+demo/.settings/
+demo/.project
+demo/.factorypath
+demo/.classpath

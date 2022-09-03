@@ -1,0 +1,25 @@
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    password: Ay1ZwVVeVsHIHnPh0g9LyjQHsOHiqYgWqVsXSZQPAkw=
+  main:
+    allow-circular-references: true
+    
+    
+server:
+  servlet:
+    session:
+      timeout: 300
+
+  
+price:
+  update:
+    stream: price_update_stream
+
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
