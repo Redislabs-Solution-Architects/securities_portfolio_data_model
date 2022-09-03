@@ -75,11 +75,11 @@ Following are the 2 indexes and the corresponding queries which does that:
 
 #### Queries 
 1. Get all the security lots by account number/id
-     * FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' 
+     * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
 2. Get all the security lots by account number/id and ticker
-     * FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{HDFCBANK}' 
+     * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{HDFCBANK}'` 
 3. Get avg cost price and total quantity of all security inside investor's security portfolio
-     * FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE AVG 1 @price as avgPrice REDUCE SUM 1 @quantity as totalQuantity
+     * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE AVG 1 @price as avgPrice REDUCE SUM 1 @quantity as totalQuantity`
 
 
 ### Dynamic pricing and storage
