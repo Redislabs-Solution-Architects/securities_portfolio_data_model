@@ -11,49 +11,78 @@ Specifically, RedisJSON as our modeling engine and RediSearch as full-text and s
 1. Investor: This would typically be any type of investor, like retail, corporation etc. Let's choose a retail investor for that matter.
     ```json
     {
-      "id": "INV10001", # unique identifier of the investor
-      "name": "Johny M.", --> Name of the investor
-      "uid": "", --> Unique government id (SSN, Aadhaar etc)
-      "pan": "" --> Unique taxpayer id provided by government (in India)
+      "id": "INV10001", 
+      "name": "Johny M.", 
+      "uid": "35178235834", 
+      "pan": "AHUIOHO684" 
     }
     ```
+
+       id -> unique identifier of the investor
+       name -> Name of the investor
+       uid -> Unique government id (SSN, Aadhaar etc)
+       pan -> Unique taxpayer id provided by government (in India)
+   
 2. Account: This is the unique trading account of the investor. An investor can have multiple account against which the investment might have been made. 
   We will stick to only one account per investor in this demo
 
     ```json
     {
-      "id": "ACC10001", # unique identifier of the investor,
-      "investorId": "INV10001", --> Investor id defined above,
-      "accountNo": "ACC10001", --> Same as account number
-      "accountOpenDate": "20/11/2018", --> Date on which this account was opened
-      "accountCloseDate": "NA", --> Date on which this account was closed. 'NA' means active a/c
-      "retailInvestor": true --> 'true' means retail investor
+      "id": "ACC10001",
+      "investorId": "INV10001",
+      "accountNo": "ACC10001",
+      "accountOpenDate": "20/11/2018",
+      "accountCloseDate": "NA",
+      "retailInvestor": true 
     }
     ```
+
+       id -> unique identifier of the investor
+       investorId -> Investor id defined above
+       accountNo -> Same as account number
+       accountOpenDate -> Date on which this account was opened
+       accountCloseDate -> Date on which this account was closed. 'NA' means active a/c
+       retailInvestor -> 'true' means retail investor
+
 3. Security lot: This provides the buying information of a security/stock at a particular point in time. An account may 
 have multiple such lots at a given time the aggregation of which will provide the total portfolio value.
     ```json
     {
-      "id": "SC61239693", --> unique identifier of the security lot,
-      "accountNo": "ACC10001", --> Account number against which the lot was bought,
-      "ticker": "HDFCBANK", --> Unique stock ticker code listed in stock exchange 
-      "date": "20/11/2018", --> Date on which this lot was bought
-      "price": 14500, --> Price at which the lot was bought. This would be integer. 
-                          We will use lowest possible currency denomination (Cents, Paisa etc)
-      "quantity": 10,--> Total quantity of the lot
-      "type": "EQUITY" --> Type of security. For our case, it would be 'EQUITY'        
+      "id": "SC61239693",
+      "accountNo": "ACC10001", 
+      "ticker": "HDFCBANK",  
+      "date": "20/11/2018", 
+      "price": 14500, 
+      "quantity": 10, 
+      "type": "EQUITY"         
     }
     ```
+   
+       id -> unique identifier of the security lot
+       accountNo -> Account number against which the lot was bought
+       ticker -> Unique stock ticker code listed in stock exchange
+       date -> Date on which this lot was bought
+       price -> Price at which the lot was bought. This would be integer. 
+                We will use lowest possible currency denomination (Cents, Paisa etc)
+       quantity -> Total quantity of the lot
+       type -> Type of security. For our case, it would be 'EQUITY'
+
 4. Stock: This holds the information of the security or stock listed at the stock exchange. We will hold very basic details like name, code etc
 ```json
-{
-  "id": "NSE623846333", --> Unique identifier of the security stock
-  "stockCode": "HDFCBANK" --> Unique code of the stock used for trading
-  "stockName": "HDFC Bank" --> Name of the stock   
-  "description": "Something about HDFC bank" --> Description of the stock
-  "active": true --> If the stock is available for trading 
-}
+    {
+      "id": "NSE623846333",
+      "stockCode": "HDFCBANK",
+      "stockName": "HDFC Bank",
+      "description": "Something about HDFC bank",
+      "active": true
+    }
 ```
+
+       id -> Unique identifier of the security stock
+       stockCode -> Unique code of the stock used for trading
+       stockName -> Name of the stock
+       description -> Description of the stock
+       active -> If the stock is available for trading
 
 ### Sample operations on the model 
 In a typical trading use case, there can be and there will be multiple use cases. Where one hand we may have very trivial 
@@ -100,11 +129,16 @@ and [files/MARUTI_intraday.csv](https://github.com/bestarch/sample_trading_data_
 
 * These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
 in '/demo' folder and written using Java, Spring etc.
+The docker image for the consumer is: `abhishekcoder/demo.streams.consumer`
 This consumer performs following responsibilities:
 
   1. Consuming the pricing data, remodeling it and disaggregating it based on the stock ticker
   2. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
   3. Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
+
+Run the consumer docker container:
+`docker run -p 127.0.0.1:8080:8080 -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSOWRD>> abhishekcoder/demo.streams.consumer:latest
+`
 
 #### Create Time series key for tracking price for a security
     TS.CREATE price_history_ts:HDFCBANK ticker hdfcbank DUPLICATE_POLICY LAST
@@ -129,3 +163,46 @@ Create rule for daily average price for a particular security
 
     TS.CREATERULE price_history_ts:HDFCBANK price_history_ts:HDFCBANK_AGGR AGGREGATION avg 86400000
 
+
+## Steps in sequence
+Execute following steps to run this demo:
+
+1. To test our investore, account, security_lot data models, we need to add some test data. For that purpose,
+   let's execute `generator.py`. This will add some test intra-day data for HDFCBANK and MARUTI securities.
+
+2. Next we will execute following RediSearch indexes before actually running any queries:
+   
+
+    FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT 
+    $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.type as type TAG
+    
+    FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT 
+    $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT 
+
+3. Now, we can execute the queries to test our data model. The first part of this exercise/demo is complete:
+    1. Get all the security lots by account number/id
+        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
+    2. Get all the security lots by account number/id and ticker
+        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{HDFCBANK}'` 
+    3. Get avg cost price and total quantity of all security inside investor's security portfolio
+        * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE AVG 1 @price as avgPrice REDUCE SUM 1 @quantity as totalQuantity`
+
+4. For the second part, we will test the dynamic pricing and storage use case of securities. 
+   For that start the Redis Streams consumer using following docker command. (You may also execute directly via any IDE like STs,IntelliJ etc).
+      If successfully started, this will wait for any pricing signals.
+
+
+        docker run -p 127.0.0.1:8080:8080 -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSOWRD>> abhishekcoder/demo.streams.consumer:latest
+5. Next, push the pricing changes into the Redis Streams. For this run the price_producer.py.
+   If successfully started, it will start pushing the ticker prices into the Redis Streams.
+6. You may notice, the stream consumer we started in step 1 will begin to process the messages and will push them 
+   to RedisTimeSeries database.
+7. Execute following command to get the latest price:
+
+
+        TS.GET price_history_ts:HDFCBANK
+
+8. Now since the historic prices are populated in timeseries database, we can get the price info between two dates/times for a ticker
+
+
+        TS.RANGE price_history_ts:HDFCBANK 1352332800 1392602800
