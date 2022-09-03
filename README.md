@@ -136,9 +136,6 @@ This consumer performs following responsibilities:
   2. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
   3. Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
 
-Run the consumer docker container:
-`docker run -p 127.0.0.1:8080:8080 -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSOWRD>> abhishekcoder/demo.streams.consumer:latest
-`
 
 #### Create Time series key for tracking price for a security
     TS.CREATE price_history_ts:HDFCBANK ticker hdfcbank DUPLICATE_POLICY LAST
