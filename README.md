@@ -72,8 +72,10 @@ have multiple such lots at a given time the aggregation of which will provide th
     {
       "id": "NSE623846333",
       "stockCode": "HDFCBANK",
+      "isin": "INE040A01034",
       "stockName": "HDFC Bank",
       "description": "Something about HDFC bank",
+      "dateOfListing": "08/11/1995",
       "active": true
     }
 ```
