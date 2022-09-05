@@ -14,12 +14,12 @@ if __name__ == '__main__':
     try:
         data = pd.read_csv("files/HDFCBANK_intraday.csv")
         for i in data.index:
-            dateInUnix = calendar.timegm(time.strptime(data['DateTime'][i], '%Y-%m-%d %H:%M:%S'))
+            dateInUnix = int(time.mktime(time.strptime(data['DateTime'][i], '%Y-%m-%d %H:%M:%S')))
             conn.xadd(price_stream_name,
                       {"ticker": "HDFCBANK", "datetime": data['DateTime'][i], "dateInUnix": dateInUnix,
                        "price": data['Pre Open HDFCBANK'][i]})
             print(str(i+1)+" pricing record generated for HDFCBANK")
-            time.sleep(1)
+            time.sleep(0.5)
         print("Trading recordset generated")
     except Exception as inst:
         print(type(inst))
