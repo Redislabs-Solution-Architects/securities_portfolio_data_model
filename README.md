@@ -166,7 +166,7 @@ Create rule for daily average price for a particular security
 Following diagram shows how data flows in and out of the system and how different pieces stitch 
 together to provide the complete picture. 
 
-![](/Users/abhishek/apps/BFSI/trading.drawio.png)
+![trading drawio](https://user-images.githubusercontent.com/26322220/188598080-7bdf315f-09f5-4b5c-85c6-54a3b80865ee.png)
 
 
 ## Steps in sequence
