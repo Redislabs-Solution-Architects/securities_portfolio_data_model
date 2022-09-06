@@ -142,6 +142,12 @@ This consumer performs following responsibilities:
   2. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
   3. Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
 
+## Data flow
+Following diagram shows how data flows in and out of the system and how different pieces stitch 
+together to provide the complete picture. 
+
+![trading drawio](https://user-images.githubusercontent.com/26322220/188598080-7bdf315f-09f5-4b5c-85c6-54a3b80865ee.png)
+
 
 #### Create Time series key for tracking price for a security
     TS.CREATE price_history_ts:HDFCBANK ticker hdfcbank DUPLICATE_POLICY LAST
@@ -166,17 +172,12 @@ Create rule for daily average price for a particular security
 
     TS.CREATERULE price_history_ts:HDFCBANK price_history_ts:HDFCBANK_AGGR AGGREGATION avg 86400000
 
-## Data flow
-Following diagram shows how data flows in and out of the system and how different pieces stitch 
-together to provide the complete picture. 
-
-![trading drawio](https://user-images.githubusercontent.com/26322220/188598080-7bdf315f-09f5-4b5c-85c6-54a3b80865ee.png)
 
 
 ## Steps in sequence
 Execute following steps to run this demo:
 
-1. To test our investore, account, security_lot data models, we need to add some test data. For that purpose,
+1. To test our investors, account, security_lot data models, we need to add some test data. For that purpose,
    let's execute `generator.py`. This will add some test intra-day data for HDFCBANK and MARUTI securities.
 
 2. Next we will execute following RediSearch indexes before actually running any queries:
@@ -200,7 +201,7 @@ Execute following steps to run this demo:
 
 
         docker run -p 127.0.0.1:8080:8080 -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSOWRD>> abhishekcoder/demo.streams.consumer:latest
-5. Next, push the pricing changes into the Redis Streams. For this run the price_producer.py.
+5. Next, push the pricing changes into the Redis Streams. For this run the `price_producer.py`.
    If successfully started, it will start pushing the ticker prices into the Redis Streams.
 6. You may notice, the stream consumer we started in step 1 will begin to process the messages and will push them 
    to RedisTimeSeries database.
@@ -213,3 +214,8 @@ Execute following steps to run this demo:
 
 
         TS.RANGE price_history_ts:HDFCBANK 1352332800 1392602800
+9. To visualise this on browser, run the server.py script included in this repo. When successfully executed, open 
+[http://127.0.0.1:5000](http://127.0.0.1:5000) and observe the data in action. 
+You will see the current price, day low, day high and the intra-day trend.
+
+![img.png](img.png)

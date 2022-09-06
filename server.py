@@ -14,7 +14,7 @@ sock = Sock(app)
 ts = r.ts()
 
 
-@app.route('/overview')
+@app.route('/')
 def overview():
     return render_template('overview.html')
 
