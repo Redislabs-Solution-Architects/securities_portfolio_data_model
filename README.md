@@ -148,6 +148,8 @@ together to provide the complete picture.
 ![trading drawio](https://user-images.githubusercontent.com/26322220/188598080-7bdf315f-09f5-4b5c-85c6-54a3b80865ee.png)
 
 
+
+
 #### Create Time series key for tracking price for a security
     TS.CREATE price_history_ts:HDFCBANK ticker hdfcbank DUPLICATE_POLICY LAST
 
