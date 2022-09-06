@@ -142,7 +142,6 @@ This consumer performs following responsibilities:
   2. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
   3. Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
 
-## Data flow
 Following diagram shows how data flows in and out of the system and how different pieces stitch 
 together to provide the complete picture. 
 
