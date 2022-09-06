@@ -1,11 +1,6 @@
 package com.bestarch.demo.service;
 
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Map;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,24 +29,16 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 
 	private final static ObjectMapper objectMapper = new ObjectMapper();
 
-	private SecureRandom random;
-
-	@PostConstruct
-	public void name() throws NoSuchAlgorithmException, UnsupportedEncodingException {
-		random = SecureRandom.getInstance("SHA1PRNG");
-		random.setSeed("ABC".getBytes("UTF-8"));
-	}
-
 	@Override
 	public void onMessage(MapRecord<String, String, String> message) {
-		RedisTimeSeriesCommands<String, String> ts = connection.sync();
-		logger.info(message.toString());
-		Map<String, String> values = message.getValue();
 		try {
+			RedisTimeSeriesCommands<String, String> ts = connection.sync();
+			logger.info(message.toString());
+			Map<String, String> values = message.getValue();
 			StockPriceStreamRecord rec = objectMapper.convertValue(values, StockPriceStreamRecord.class);
 			ts.tsAdd("price_history_ts:"+rec.getTicker(), Sample.of(rec.getDateInUnix(), rec.getPrice()));
 		} catch (Exception e) {
-			logger.error("An exception occurred in parsing. Ignoring the error");
+			logger.error("An exception occurred in parsing. Ignoring the error", e);
 		}
 	}
 
