@@ -85,6 +85,10 @@ have multiple such lots at a given time the aggregation of which will provide th
        stockName -> Name of the stock
        description -> Description of the stock
        active -> If the stock is available for trading
+       
+       
+![class_trading drawio](https://user-images.githubusercontent.com/26322220/188601634-be8d8622-9d88-4973-9994-1113854cae05.png)
+
 
 ### Sample operations on the model 
 In a typical trading use case, there can be and there will be multiple use cases. Where one hand we may have very trivial 
