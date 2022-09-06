@@ -162,6 +162,12 @@ Create rule for daily average price for a particular security
 
     TS.CREATERULE price_history_ts:HDFCBANK price_history_ts:HDFCBANK_AGGR AGGREGATION avg 86400000
 
+## Data flow
+Following diagram shows how data flows in and out of the system and how different pieces stitch 
+together to provide the complete picture. 
+
+![](/Users/abhishek/apps/BFSI/trading.drawio.png)
+
 
 ## Steps in sequence
 Execute following steps to run this demo:
