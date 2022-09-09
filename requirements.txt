@@ -6,3 +6,4 @@ pydantic==1.9.2
 email-validator~=1.2.1
 Flask==2.2.2
 flask-sock==0.5.2
+jproperties==2.1.1

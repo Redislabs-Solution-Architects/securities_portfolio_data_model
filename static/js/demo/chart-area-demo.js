@@ -38,23 +38,15 @@ socket2.addEventListener('message', ev => {
     console.log(data)
 
     for (i in data.timeTrend) {
-        if (data.timeTrend[i] != prevTimeStamp) {
-            myLineChart.data.labels.push(data.timeTrend[i]);
-            prevTimeStamp = data.timeTrend[i];
-            console.log("Time value: "+data.timeTrend[i]);
-        } else {
-            console.log("updatePrice to false");
-            updatePrice = false
-        }
+        myLineChart.data.labels.push(data.timeTrend[i]);
+        prevTimeStamp = data.timeTrend[i];
+        console.log("Time value: "+data.timeTrend[i]);
     }
-    console.log("updatePrice: "+updatePrice)
+   // console.log("updatePrice: "+updatePrice)
     for (i in data.price) {
         myLineChart.data.datasets.forEach((dataset) => {
             console.log("Price value: "+data.price[i]);
-            if (updatePrice) {
-                console.log("Pushing value to dataset: "+data.price[i]);
-                dataset.data.push(data.price[i]);
-            }
+            dataset.data.push(data.price[i]);
         });
     }
     myLineChart.update();
@@ -68,17 +60,18 @@ var myLineChart = new Chart(ctx, {
     labels: temp.timeTrend,
     datasets: [{
       label: "Price",
-      lineTension: 0.3,
+      lineTension: 0.1,
       backgroundColor: "rgba(78, 115, 223, 0.05)",
       borderColor: "rgba(78, 115, 223, 1)",
-      pointRadius: 3,
+      pointRadius: 1,
       pointBackgroundColor: "rgba(78, 115, 223, 1)",
       pointBorderColor: "rgba(78, 115, 223, 1)",
-      pointHoverRadius: 3,
+      pointHoverRadius: 1,
       pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
       pointHoverBorderColor: "rgba(78, 115, 223, 1)",
-      pointHitRadius: 10,
-      pointBorderWidth: 2,
+      pointHitRadius: 2,
+      pointBorderWidth: 1,
+      borderWidth: 0.8,
       data: temp.price
     }],
   },
@@ -102,12 +95,12 @@ var myLineChart = new Chart(ctx, {
           drawBorder: false
         },
         ticks: {
-          maxTicksLimit: 7
+          maxTicksLimit: 10
         }
       }],
       yAxes: [{
         ticks: {
-          maxTicksLimit: 5,
+          maxTicksLimit: 6,
           padding: 10,
           callback: function(value, index, values) {
             return number_format(value);
@@ -123,18 +116,18 @@ var myLineChart = new Chart(ctx, {
       }],
     },
     legend: {
-      display: false
+      display: true
     },
     tooltips: {
       backgroundColor: "rgb(255,255,255)",
       bodyFontColor: "#858796",
       titleMarginBottom: 10,
       titleFontColor: '#6e707e',
-      titleFontSize: 14,
+      titleFontSize: 12,
       borderColor: '#dddfeb',
       borderWidth: 1,
-      xPadding: 15,
-      yPadding: 15,
+      xPadding: 5,
+      yPadding: 5,
       displayColors: false,
       intersect: false,
       mode: 'index',

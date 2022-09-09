@@ -1,7 +1,12 @@
 import redis
-import calendar
 import time
 import pandas as pd
+from jproperties import Properties
+
+
+configs = Properties()
+with open('./config/app-config.properties', 'rb') as config_file:
+    configs.load(config_file)
 
 
 if __name__ == '__main__':
@@ -9,20 +14,21 @@ if __name__ == '__main__':
     global data, i
     if not conn.ping():
         raise Exception('Redis unavailable')
-    price_stream_name = "price_update_stream"
-
+    price_stream_name = configs.get("PRICE_STREAM").data
+    data = pd.read_csv("files/" + configs.get("TEST_STOCK").data + "_intraday.csv")
+    stock = configs.get("TEST_STOCK").data
+    priceCol = stock + "EQN"
     try:
-        data = pd.read_csv("files/HDFCBANK_intraday.csv")
         for i in data.index:
-            dateInUnix = int(time.mktime(time.strptime(data['DateTime'][i], '%Y-%m-%d %H:%M:%S')))
+            dateInUnix = int(time.mktime(time.strptime(data['DateTime'][i], configs.get("DATE_FORMAT").data)))
             conn.xadd(price_stream_name,
-                      {"ticker": "HDFCBANK", "datetime": data['DateTime'][i], "dateInUnix": dateInUnix,
-                       "price": data['Pre Open HDFCBANK'][i]})
-            print(str(i+1)+" pricing record generated for HDFCBANK")
+                      {"ticker": stock, "datetime": data['DateTime'][i], "dateInUnix": dateInUnix,
+                       "price": data[priceCol][i]})
+            print(str(i+1)+" pricing record generated for "+stock)
             time.sleep(0.5)
         print("Trading recordset generated")
     except Exception as inst:
         print(type(inst))
-        print("Exception occurred while generating pricing data"+data['Pre Open HDFCBANK'][i])
+        print("Exception occurred while generating pricing data"+data[priceCol][i])
         print(data)
         #raise Exception('Exception occurred while generating pricing data. Delete the corrupted data and try again')

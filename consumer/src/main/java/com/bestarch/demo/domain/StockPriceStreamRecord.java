@@ -4,13 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class StockPriceStreamRecord {
 
 	private String key;
@@ -18,5 +16,11 @@ public class StockPriceStreamRecord {
 	private String datetime;
 	private Long dateInUnix;
 	private Double price;
-	
+
+	@Override
+	public String toString() {
+		return "Record --> [key=" + key + ", ticker=" + ticker + ", datetime=" + datetime + ", dateInUnix=" + dateInUnix
+				+ ", price=" + price + "]";
+	}
+
 }

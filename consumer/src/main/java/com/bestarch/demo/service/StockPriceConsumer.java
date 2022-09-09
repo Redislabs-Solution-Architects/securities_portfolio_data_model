@@ -2,6 +2,7 @@ package com.bestarch.demo.service;
 
 import java.util.Map;
 
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,20 +26,28 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 	private String priceUpdateStream;
 
 	@Autowired
-	private StatefulRedisModulesConnection<String, String> connection;
+	private GenericObjectPool<StatefulRedisModulesConnection<String, String>> pool;
 
 	private final static ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
 	public void onMessage(MapRecord<String, String, String> message) {
+		StatefulRedisModulesConnection<String, String> connection = null;
 		try {
+			connection = pool.borrowObject();
 			RedisTimeSeriesCommands<String, String> ts = connection.sync();
-			logger.info(message.toString());
 			Map<String, String> values = message.getValue();
+			logger.info(values.toString());
 			StockPriceStreamRecord rec = objectMapper.convertValue(values, StockPriceStreamRecord.class);
 			ts.tsAdd("price_history_ts:"+rec.getTicker(), Sample.of(rec.getDateInUnix(), rec.getPrice()));
 		} catch (Exception e) {
-			logger.error("An exception occurred in parsing. Ignoring the error", e);
+			//logger.error("An exception occurred while consuming the message. Ignoring the error", e);
+		} finally {
+			try {
+				pool.returnObject(connection);
+			} catch (Exception e2) {
+				logger.error("Exception occurred while returning connection to pool", e2);
+			}
 		}
 	}
 
