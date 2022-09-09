@@ -1,6 +1,10 @@
 import redis
 from faker import Faker
+from jproperties import Properties
 
+configs = Properties()
+with open('./config/app-config.properties', 'rb') as config_file:
+    configs.load(config_file)
 Faker.seed(0)
 fake = Faker('en_IN')
 
@@ -73,7 +77,7 @@ def generate_trading_data(conn):
 
 
 if __name__ == '__main__':
-    conn = redis.Redis(host='localhost', port=6379)
+    conn = redis.Redis(host=configs.get("HOST").data, port=configs.get("PORT").data)
     if not conn.ping():
         raise Exception('Redis unavailable')
     try:
