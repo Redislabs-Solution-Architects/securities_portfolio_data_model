@@ -83,7 +83,7 @@
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                                 Stock</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stockSymbol">HDFCBANK (isin:NSE5673243)</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stockSymbol">RDBBANK (isin:NSE112143)</div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -211,7 +211,7 @@
     <script src="{{ url_for('static', filename = 'js/demo/chart-area-demo.js') }}"></script>
 
     <script language="JavaScript">
-      const socket = new WebSocket('ws://' + location.host + '/price/HDFCBANK');
+      const socket = new WebSocket('ws://' + location.host + '/price/RDBBANK');
 
       socket.addEventListener('message', ev => {
         id="currentPrice"

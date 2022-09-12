@@ -50,7 +50,7 @@ have multiple such lots at a given time the aggregation of which will provide th
     {
       "id": "SC61239693",
       "accountNo": "ACC10001", 
-      "ticker": "HDFCBANK",  
+      "ticker": "RDBBANK",  
       "date": "20/11/2018", 
       "price": 14500, 
       "quantity": 10, 
@@ -71,10 +71,10 @@ have multiple such lots at a given time the aggregation of which will provide th
 ```json
     {
       "id": "NSE623846333",
-      "stockCode": "HDFCBANK",
-      "isin": "INE040A01034",
-      "stockName": "HDFC Bank",
-      "description": "Something about HDFC bank",
+      "stockCode": "RDBBANK",
+      "isin": "INE211111034",
+      "stockName": "RDB Bank",
+      "description": "Something about RDB bank",
       "dateOfListing": "08/11/1995",
       "active": true
     }
@@ -112,7 +112,7 @@ Following are the 2 indexes and the corresponding queries which does that:
 1. Get all the security lots by account number/id
      * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
 2. Get all the security lots by account number/id and ticker
-     * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{HDFCBANK}'` 
+     * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
 3. Get avg cost price and total quantity of all security inside investor's security portfolio
      * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE AVG 1 @price as avgPrice REDUCE SUM 1 @quantity as totalQuantity`
 
@@ -121,16 +121,16 @@ Following are the 2 indexes and the corresponding queries which does that:
 Stock pricing data is very dynamic and changes a lot during while trade is active. To address this problem we will use 
 RedisTimeSeries to store the historical and the current stock prices.
 
-This repo contains the actual intra-day prices for few stocks (HDFCBANK, MARUTI) taken from https://www.nseindia.com/
-in [files/HDFCBANK_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/HDFCBANK_intraday.csv) 
-and [files/MARUTI_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/MARUTI_intraday.csv)
+This repo contains the actual intra-day prices for few stocks like RDBBANK, RDBMOTORS (name changed) taken from https://www.nseindia.com/
+in [files/RDBBANK_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/RDBBANK_intraday.csv) 
+and [files/RDBMOTORS_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/RDBMOTORS_intraday.csv)
 
 * Using [price_producer.py](https://github.com/bestarch/sample_trading_data_model/blob/main/price_producer.py) we will ingest the intra-day price changes for these securities into Redis Enterprise.
 
 * The script will push these changes into Redis Streams in a common stream `price_update_stream`.
 
 
-        XADD STREAMS * price_update_stream {"ticker":"HDFCBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
+        XADD STREAMS * price_update_stream {"ticker":"RDBBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
 
 
 * These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
@@ -151,10 +151,10 @@ together to provide the complete picture.
 
 
 #### Create Time series key for tracking price for a security
-    TS.CREATE price_history_ts:HDFCBANK ticker hdfcbank DUPLICATE_POLICY LAST
+    TS.CREATE price_history_ts:RDBBANK ticker rdbbank DUPLICATE_POLICY LAST
 
 #### Adding pricing information for a security
-    TS.ADD price_history_ts:HDFCBANK 1352332800 635.5
+    TS.ADD price_history_ts:RDBBANK 1352332800 635.5
 
 Now, since the RedisTimeSeries database contains all the pricing data for a particular security, we can write some RedisTimeSeries
 queries to get the pricing trend, current price, aggregation of the price overtime. We can also use downsampling feature to 
@@ -163,15 +163,15 @@ get the trend by days, weeks, months, years etc.
 #### Some common timeseries operations
 Get latest price for a ticker
 
-    TS.GET price_history_ts:HDFCBANK
+    TS.GET price_history_ts:RDBBANK
 
 Get the price info between two dates/times for a ticker
     
-    TS.RANGE price_history_ts:HDFCBANK 1352332800 1392602800
+    TS.RANGE price_history_ts:RDBBANK 1352332800 1392602800
 
 Create rule for daily average price for a particular security
 
-    TS.CREATERULE price_history_ts:HDFCBANK price_history_ts:HDFCBANK_AGGR AGGREGATION avg 86400000
+    TS.CREATERULE price_history_ts:RDBBANK price_history_ts:RDBBANK_AGGR AGGREGATION avg 86400000
 
 
 
@@ -179,7 +179,7 @@ Create rule for daily average price for a particular security
 Execute following steps to run this demo:
 
 1. To test our investors, account, security_lot data models, we need to add some test data. For that purpose,
-   let's execute `generator.py`. This will add some test intra-day data for HDFCBANK and MARUTI securities.
+   let's execute `generator.py`. This will add some test intra-day data for RDBBANK and RDBMOTORS securities.
 
 2. Next we will execute following RediSearch indexes before actually running any queries:
 
@@ -192,7 +192,7 @@ Execute following steps to run this demo:
     1. Get all the security lots by account number/id
         * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
     2. Get all the security lots by account number/id and ticker
-        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{HDFCBANK}'` 
+        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
     3. Get avg cost price and total quantity of all security inside investor's security portfolio
         * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE AVG 1 @price as avgPrice REDUCE SUM 1 @quantity as totalQuantity`
 
@@ -209,13 +209,13 @@ Execute following steps to run this demo:
 7. Execute following command to get the latest price:
 
 
-        TS.GET price_history_ts:HDFCBANK
+        TS.GET price_history_ts:RDBBANK
 
 8. Now since the historic prices are populated in timeseries database, we can get the price info between two dates/times for a ticker
 
 
-        TS.RANGE price_history_ts:HDFCBANK 1352332800 1392602800
-9. To visualise this on browser, run the server.py script included in this repo. When successfully executed, open 
+        TS.RANGE price_history_ts:RDBBANK 1352332800 1392602800
+9. To visualise this on browser, run the `server.py` script included in this repo. When successfully executed, open 
 [http://127.0.0.1:5000](http://127.0.0.1:5000) and observe the data in action. 
 You will see the current price, day low, day high and the intra-day trend.
 

@@ -29,7 +29,7 @@ function number_format(number, decimals, dec_point, thousands_sep) {
 
 // Area Chart Example
 var temp = eval({"price": 0, "timeTrend": 0});
-var socket2 = new WebSocket('ws://' + location.host + '/intraday-trend/HDFCBANK');
+var socket2 = new WebSocket('ws://' + location.host + '/intraday-trend/RDBBANK');
 var prevTimeStamp = 0;
 var updatePrice = true
 socket2.addEventListener('message', ev => {

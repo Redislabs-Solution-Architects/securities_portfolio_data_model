@@ -51,27 +51,27 @@ def generate_trading_data(conn):
         }
         conn.json().set(securityLotPrefix + secLotId, "$", securityLot)
 
-    price_hdfc = [139450, 158670, 135300]
-    dates_hdfc = ["16/12/2020", "09/02/2021", "12/04/2021"]
-    quantity_hdfc = [10, 20, 80]
+    price_stock1 = [139450, 158670, 135300]
+    dates_stock1 = ["16/12/2020", "09/02/2021", "12/04/2021"]
+    quantity_stock1 = [10, 20, 80]
     for index in range(3):
         secLotId = fake.lexify("????").upper() + str(fake.random_number(digits=6, fix_len=True))
         securityLot = {
-            "id": secLotId, "accountNo": accountNo, "ticker": "HDFCBANK",
-            "date": dates_hdfc[index], "price": price_hdfc[index],
-            "quantity": quantity_hdfc[index], "type": "EQUITY"
+            "id": secLotId, "accountNo": accountNo, "ticker": configs.get("TEST_STOCK").data,
+            "date": dates_stock1[index], "price": price_stock1[index],
+            "quantity": quantity_stock1[index], "type": "EQUITY"
         }
         conn.json().set(securityLotPrefix + secLotId, "$", securityLot)
 
-    price_maruti = [568145, 654500]
-    dates_maruti = ["30/06/2020", "28/04/2021"]
-    quantity_maruti = [12, 35]
+    price_stock2 = [568145, 654500]
+    dates_stock2 = ["30/06/2020", "28/04/2021"]
+    quantity_stock2 = [12, 35]
     for index in range(2):
         secLotId = fake.lexify("????").upper() + str(fake.random_number(digits=6, fix_len=True))
         securityLot = {
-            "id": secLotId, "accountNo": accountNo, "ticker": "MARUTI",
-            "date": dates_maruti[index], "price": price_maruti[index],
-            "quantity": quantity_maruti[index], "type": "EQUITY"
+            "id": secLotId, "accountNo": accountNo, "ticker": configs.get("TEST_STOCK2").data,
+            "date": dates_stock2[index], "price": price_stock2[index],
+            "quantity": quantity_stock2[index], "type": "EQUITY"
         }
         conn.json().set(securityLotPrefix + secLotId, "$", securityLot)
 
