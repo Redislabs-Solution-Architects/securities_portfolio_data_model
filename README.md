@@ -125,22 +125,26 @@ This repo contains the actual intra-day prices for few stocks like RDBBANK, RDBM
 in [files/RDBBANK_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/RDBBANK_intraday.csv) 
 and [files/RDBMOTORS_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/RDBMOTORS_intraday.csv)
 
-* Using [price_producer.py](https://github.com/bestarch/sample_trading_data_model/blob/main/price_producer.py) we will ingest the intra-day price changes for these securities into Redis Enterprise.
+**Pricing data ingestion**
 
-* The script will push these changes into Redis Streams in a common stream `price_update_stream`.
+    * Using [price_producer.py](https://github.com/bestarch/sample_trading_data_model/blob/main/price_producer.py) we will ingest the intra-day price changes for these securities into Redis Enterprise.
+
+    * The script will push these changes into Redis Streams in a common stream `price_update_stream`.
 
 
-        XADD STREAMS * price_update_stream {"ticker":"RDBBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
+            XADD STREAMS * price_update_stream {"ticker":"RDBBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
 
 
-* These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
-in '/demo' folder and written using Java, Spring etc.
-The docker image for the consumer is: `abhishekcoder/demo.streams.consumer`
-This consumer performs following responsibilities:
+**Processing of pricing data**
 
-  1. Consuming the pricing data, remodeling it and disaggregating it based on the stock ticker
-  2. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
-  3. Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
+    * These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
+    in '/demo' folder and written using Java, Spring etc.
+    The docker image for the consumer is: `abhishekcoder/demo.streams.consumer`
+    This consumer performs following responsibilities:
+
+      1. Consuming the pricing data, remodeling it and disaggregating it based on the stock ticker
+      2. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
+      3. Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
 
 Following diagram shows how data flows in and out of the system and how different pieces stitch 
 together to provide the complete picture. 
