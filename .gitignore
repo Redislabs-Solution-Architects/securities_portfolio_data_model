@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.idea/
+
+consumer/.settings/
+consumer/.project
+consumer/.factorypath
+consumer/.classpath
