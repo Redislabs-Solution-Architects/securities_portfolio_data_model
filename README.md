@@ -127,24 +127,25 @@ and [files/RDBMOTORS_intraday.csv](https://github.com/bestarch/sample_trading_da
 
 **Pricing data ingestion**
 
-    * Using [price_producer.py](https://github.com/bestarch/sample_trading_data_model/blob/main/price_producer.py) we will ingest the intra-day price changes for these securities into Redis Enterprise.
-
-    * The script will push these changes into Redis Streams in a common stream `price_update_stream`.
-
-
-            XADD STREAMS * price_update_stream {"ticker":"RDBBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
+* Using [price_producer.py](https://github.com/bestarch/sample_trading_data_model/blob/main/price_producer.py) we will ingest the intra-day price changes for these securities into Redis Enterprise.
+* The script will push these changes into Redis Streams in a common stream `price_update_stream`.
+    
+       XADD STREAMS * price_update_stream {"ticker":"RDBBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
 
 
 **Processing of pricing data**
 
-    * These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
-    in '/demo' folder and written using Java, Spring etc.
-    The docker image for the consumer is: `abhishekcoder/demo.streams.consumer`
-    This consumer performs following responsibilities:
+These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
+in '/demo' folder and written using Java, Spring etc.
+
+The docker image for the consumer is: `abhishekcoder/demo.streams.consumer`
+
+This consumer performs following responsibilities:
 
       1. Consuming the pricing data, remodeling it and disaggregating it based on the stock ticker
       2. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
       3. Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
+
 
 Following diagram shows how data flows in and out of the system and how different pieces stitch 
 together to provide the complete picture. 
@@ -152,28 +153,29 @@ together to provide the complete picture.
 ![trading drawio](https://user-images.githubusercontent.com/26322220/188598080-7bdf315f-09f5-4b5c-85c6-54a3b80865ee.png)
 
 
+### Tracking stock prices
 
+Above consumer will create Time series key for tracking price for a security:
 
-#### Create Time series key for tracking price for a security
     TS.CREATE price_history_ts:RDBBANK ticker rdbbank DUPLICATE_POLICY LAST
 
-#### Adding pricing information for a security
+The consumer will update the pricing info in the timeseries db whenever it arrives:
+
     TS.ADD price_history_ts:RDBBANK 1352332800 635.5
 
 Now, since the RedisTimeSeries database contains all the pricing data for a particular security, we can write some RedisTimeSeries
 queries to get the pricing trend, current price, aggregation of the price overtime. We can also use downsampling feature to 
 get the trend by days, weeks, months, years etc.
 
-#### Some common timeseries operations
-Get latest price for a ticker
+#### Get latest price for a ticker
 
     TS.GET price_history_ts:RDBBANK
 
-Get the price info between two dates/times for a ticker
+#### Get the price info between two dates/times for a ticker
     
     TS.RANGE price_history_ts:RDBBANK 1352332800 1392602800
 
-Create rule for daily average price for a particular security
+#### Create rule for daily average price for a particular security
 
     TS.CREATERULE price_history_ts:RDBBANK price_history_ts:RDBBANK_AGGR AGGREGATION avg 86400000
 
