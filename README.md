@@ -90,7 +90,7 @@ have multiple such lots at a given time the aggregation of which will provide th
 ![class_trading drawio](https://user-images.githubusercontent.com/26322220/188601634-be8d8622-9d88-4973-9994-1113854cae05.png)
 
 
-### Sample operations on the model 
+### Get account level details  
 In a typical trading use case, there can be and there will be multiple use cases. Where one hand we may have very trivial 
 operations like fetching the investor details, getting account details etc then on the other hand we may see quite complicated queries as well like:
 getting the value of the securities an investor holds at a time, getting average cost price of the stocks purchased and so on.
@@ -108,13 +108,13 @@ Following are the 2 indexes and the corresponding queries which does that:
     FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT 
     $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT 
 
-#### Queries 
-1. Get all the security lots by account number/id
-     * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
-2. Get all the security lots by account number/id and ticker
-     * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
-3. Get avg cost price and total quantity of all security inside investor's security portfolio
-     * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE AVG 1 @price as avgPrice REDUCE SUM 1 @quantity as totalQuantity`
+    **Queries** 
+    1. Get all the security lots by account number/id
+         * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
+    2. Get all the security lots by account number/id and ticker
+         * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
+    3. Get avg cost price and total quantity of all security inside investor's security portfolio
+         * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE AVG 1 @price as avgPrice REDUCE SUM 1 @quantity as totalQuantity`
 
 
 ### Dynamic pricing and storage
