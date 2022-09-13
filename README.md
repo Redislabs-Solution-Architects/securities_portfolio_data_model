@@ -220,7 +220,7 @@ Execute following steps to run this demo:
 
         TS.RANGE price_history_ts:RDBBANK 1352332800 1392602800
 9. To visualise this on browser, run the `server.py` script included in this repo. When successfully executed, open 
-[http://127.0.0.1:5000](http://127.0.0.1:5000) and observe the data in action. 
+[http://localhost:5555](http://localhost:5555) and observe the data in action. 
 You will see the current price, day low, day high and the intra-day trend.
 
 ![img.png](img.png)
