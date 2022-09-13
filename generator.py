@@ -34,10 +34,10 @@ def generate_trading_data(conn):
         "accountCloseDate": '', "retailInvestor": True
     }
 
-    conn.json().set("trading:investor:" + investorId, "$", investor2)
-    conn.json().set("trading:account:" + accountNo, "$", account2)
-    conn.json().set("trading:investor:INV10002", "$", investor)
-    conn.json().set("trading:account:ACC10002", "$", account)
+    conn.json().set("trading:investor:" + investorId, "$", investor)
+    conn.json().set("trading:account:" + accountNo, "$", account)
+    conn.json().set("trading:investor:INV10002", "$", investor2)
+    conn.json().set("trading:account:ACC10002", "$", account2)
 
     price_telco = [16555, 29220, 29050, 29460, 29510, 30300, 29255]
     dates_telco = ["20/11/2020", "22/04/2021", "23/04/2021", "26/04/2021", "27/04/2021", "28/04/2021", "30/04/2021"]
