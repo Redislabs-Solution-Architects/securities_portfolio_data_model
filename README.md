@@ -230,4 +230,5 @@ Execute following steps to run this demo:
 [http://localhost:5555](http://localhost:5555) and observe the data in action. 
 You will see the current price, day low, day high and the intra-day trend.
 
-![img.png](img.png)
+![image](https://user-images.githubusercontent.com/26322220/190096310-1c3ab7b2-9f9f-46ae-aebd-07b5ffe5bced.png)
+
