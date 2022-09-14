@@ -9,6 +9,8 @@ use Redis Enterprise for this purpose.
 Specifically, RedisJSON as our modeling engine and RediSearch as full-text and secondary indexing engine.
 
 1. Investor: This would typically be any type of investor, like retail, corporation etc. Let's choose a retail investor for that matter.
+
+  Key format: `trading:investor:<investorId>`
     ```json
     {
       "id": "INV10001", 
@@ -25,7 +27,8 @@ Specifically, RedisJSON as our modeling engine and RediSearch as full-text and s
    
 2. Account: This is the unique trading account of the investor. An investor can have multiple account against which the investment might have been made. 
   We will stick to only one account per investor in this demo
-
+  
+    Key format: `trading:account:<accountNo>`
     ```json
     {
       "id": "ACC10001",
@@ -46,6 +49,8 @@ Specifically, RedisJSON as our modeling engine and RediSearch as full-text and s
 
 3. Security lot: This provides the buying information of a security/stock at a particular point in time. An account may 
 have multiple such lots at a given time the aggregation of which will provide the total portfolio value.
+
+    Key format: `trading:securitylot:<accountNo>:<securityLotId>`
     ```json
     {
       "id": "SC61239693",
@@ -68,6 +73,8 @@ have multiple such lots at a given time the aggregation of which will provide th
        type -> Type of security. For our case, it would be 'EQUITY'
 
 4. Stock: This holds the information of the security or stock listed at the stock exchange. We will hold very basic details like name, code etc
+
+    Key format: `trading:stock:<stockId>`
 ```json
     {
       "id": "NSE623846333",
