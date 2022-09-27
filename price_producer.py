@@ -10,7 +10,7 @@ with open('./config/app-config.properties', 'rb') as config_file:
 
 
 if __name__ == '__main__':
-    conn = redis.Redis(host=configs.get("HOST").data, port=configs.get("PORT").data)
+    conn = redis.Redis(host=configs.get("HOST").data, port=configs.get("PORT").data, password=configs.get("PASSWORD").data)
     global data, i
     if not conn.ping():
         raise Exception('Redis unavailable')
