@@ -77,7 +77,7 @@ def generate_trading_data(conn):
 
 
 if __name__ == '__main__':
-    conn = redis.Redis(host=configs.get("HOST").data, port=configs.get("PORT").data)
+    conn = redis.Redis(host=configs.get("HOST").data, port=configs.get("PORT").data, password=configs.get("PASSWORD").data)
     if not conn.ping():
         raise Exception('Redis unavailable')
     try:

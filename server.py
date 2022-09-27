@@ -12,7 +12,7 @@ global app
 configs = Properties()
 with open('./config/app-config.properties', 'rb') as config_file:
     configs.load(config_file)
-r = redis.Redis(host=configs.get("HOST").data, port=configs.get("PORT").data, decode_responses=True)
+r = redis.Redis(host=configs.get("HOST").data, port=configs.get("PORT").data, password=configs.get("PASSWORD").data, decode_responses=True)
 app = Flask(__name__)
 sock = Sock(app)
 ts = r.ts()
