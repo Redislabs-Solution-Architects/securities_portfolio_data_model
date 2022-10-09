@@ -10,6 +10,9 @@ from redis.commands.search.field import TextField, NumericField, TagField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import NumericFilter, Query
 from redis_om import (JsonModel, EmbeddedJsonModel)
+from datetime import datetime
+import pytz
+import calendar, time
 
 from pydantic import (PositiveInt, PositiveFloat, AnyHttpUrl, EmailStr)
 
@@ -24,6 +27,8 @@ if not conn.ping():
 
 
 if __name__ == '__main__':
-    print('test')
+    print(str(datetime.now().date())+" 00:00:00")
+    print(time.strptime('2022-09-05 09:00:00', '%Y-%m-%d %H:%M:%S'))
 
-
+    print(int(time.mktime(time.strptime('2022-09-05 09:00:00', '%Y-%m-%d %H:%M:%S'))))
+    print(datetime.fromtimestamp(time.mktime(time.strptime('2022-09-05 09:00:00', '%Y-%m-%d %H:%M:%S'))).strftime('%Y-%m-%d %H:%M:%S'))
