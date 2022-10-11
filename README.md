@@ -223,6 +223,12 @@ Execute following steps to run this demo:
 
         docker run -p 127.0.0.1:8080:8080 -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSOWRD>> abhishekcoder/demo.streams.consumer:latest
 5. Next, push the pricing changes into the Redis Streams. For this run the `price_producer.py`.
+   use this:
+   
+    source venv/bin/activate
+    pip3 install -r requirements.txt
+    python3 price_producer.py
+
    If successfully started, it will start pushing the ticker prices into the Redis Streams.
 6. You may notice, the stream consumer we started in step 1 will begin to process the messages and will push them 
    to RedisTimeSeries database.
@@ -239,4 +245,5 @@ Execute following steps to run this demo:
 [http://localhost:5555](http://localhost:5555) and observe the data in action. 
 You will see the current price, day low, day high and the intra-day trend.
 
-![img.png](img.png)
+![image](https://user-images.githubusercontent.com/26322220/190096310-1c3ab7b2-9f9f-46ae-aebd-07b5ffe5bced.png)
+
