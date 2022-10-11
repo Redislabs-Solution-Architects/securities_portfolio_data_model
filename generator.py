@@ -39,14 +39,14 @@ def generate_trading_data(conn, file, ticker):
                     chance = 70
                 if buy:
                     dateInUnix = int(time.mktime(time.strptime(stock['Date '][i], "%d-%b-%Y")))
-                    buyingPrice = str(stock['OPEN '][i]).replace(',', '')
+                    buyingPrice = float(str(stock['OPEN '][i]).replace(',', ''))*100
 
                     quantity = fake.pyint(min_value=5, max_value=100)
                     secLotId = fake.lexify("????").upper() + str(i) + str(fake.random_number(digits=8, fix_len=True))
                     securityLot = {
                         "id": secLotId, "accountNo": accountNo, "ticker": ticker,
-                        "date": dateInUnix, "price": float(buyingPrice)*100,
-                        "quantity": quantity, "type": "EQUITY"
+                        "date": dateInUnix, "price": buyingPrice, "quantity": quantity,
+                        "lotValue": buyingPrice*quantity, "type": "EQUITY"
                     }
                     conn.json().set(securityLotPrefix + secLotId, "$", securityLot)
     except Exception as inst:
