@@ -11,15 +11,16 @@ Specifically, RedisJSON as our modeling engine and RediSearch as full-text and s
 1. Investor: This would typically be any type of investor, like retail, corporation etc. Let's choose a retail investor for that matter.
 
   Key format: `trading:investor:<investorId>`
-    ```json
+
+```json
     {
       "id": "INV10001", 
       "name": "Johny M.", 
       "uid": "35178235834", 
       "pan": "AHUIOHO684" 
     }
-    ```
-
+```
+    
        id -> unique identifier of the investor
        name -> Name of the investor
        uid -> Unique government id (SSN, Aadhaar etc)
@@ -109,17 +110,21 @@ We will build queries for:
 Above use cases can be solved if we create suitable RediSearch indexes in our Redis cluster.
 Following are the 2 indexes and the corresponding queries which does that:
 
-    FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.type as type TAG   
-    
+    FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.lotValue as lotValue NUMERIC $.date as date NUMERIC SORTABLE
     FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
 
-    **Queries** 
-    1. Get all the security lots by account number/id
-         * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
-    2. Get all the security lots by account number/id and ticker
-         * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
-    3. Get avg cost price and total quantity of all security inside investor's security portfolio
-         * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE AVG 1 @price as avgPrice REDUCE SUM 1 @quantity as totalQuantity`
+
+**Queries** 
+1. Get all the security lots by account number/id
+     * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
+2. Get all the security lots by account number/id and ticker
+     * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
+3. Get total quantity of all securities inside investor's security portfolio
+     * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
+4. Get total quantity of all securities inside investor's security portfolio at a particular time
+     * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
+5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information.
+     * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice`
 
 
 ### Dynamic pricing and storage
@@ -194,17 +199,22 @@ Execute following steps to run this demo:
 
 2. Next we will execute following RediSearch indexes before actually running any queries:
 
-    * FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.type as type TAG
-
-    * FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT 
+````
+    FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.lotValue as lotValue NUMERIC $.date as date NUMERIC SORTABLE
+    FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
+````
 
 3. Now, we can execute the queries to test our data model. The first part of this exercise/demo is complete:
-    1. Get all the security lots by account number/id
+   1. Get all the security lots by account number/id
         * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
-    2. Get all the security lots by account number/id and ticker
+   2. Get all the security lots by account number/id and ticker
         * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
-    3. Get avg cost price and total quantity of all security inside investor's security portfolio
-        * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE AVG 1 @price as avgPrice REDUCE SUM 1 @quantity as totalQuantity`
+   3. Get total quantity of all securities inside investor's security portfolio
+        * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
+   4. Get total quantity of all securities inside investor's security portfolio at a particular time
+        * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
+   5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information.
+        * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice`
 
 4. For the second part, we will test the dynamic pricing and storage use case of securities. 
    For that start the Redis Streams consumer using following docker command. (You may also execute directly via any IDE like STs,IntelliJ etc).
