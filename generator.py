@@ -39,13 +39,13 @@ def generate_trading_data(conn, file, ticker):
                     chance = 70
                 if buy:
                     dateInUnix = int(time.mktime(time.strptime(stock['Date '][i], "%d-%b-%Y")))
-                    buyingPrice = stock['OPEN '][i]
-                    quantity = fake.pyint(min_value=5, max_value=100)
+                    buyingPrice = str(stock['OPEN '][i]).replace(',', '')
 
+                    quantity = fake.pyint(min_value=5, max_value=100)
                     secLotId = fake.lexify("????").upper() + str(i) + str(fake.random_number(digits=8, fix_len=True))
                     securityLot = {
                         "id": secLotId, "accountNo": accountNo, "ticker": ticker,
-                        "date": dateInUnix, "price": buyingPrice,
+                        "date": dateInUnix, "price": float(buyingPrice)*100,
                         "quantity": quantity, "type": "EQUITY"
                     }
                     conn.json().set(securityLotPrefix + secLotId, "$", securityLot)
