@@ -200,7 +200,8 @@ Execute following steps to run this demo:
 
 
     FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.lotValue as lotValue NUMERIC $.date as date NUMERIC SORTABLE
-    FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT 
+    FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
+
 
 3. Now, we can execute the queries to test our data model. The first part of this exercise/demo is complete:
    1. Get all the security lots by account number/id
