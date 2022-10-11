@@ -11,15 +11,16 @@ Specifically, RedisJSON as our modeling engine and RediSearch as full-text and s
 1. Investor: This would typically be any type of investor, like retail, corporation etc. Let's choose a retail investor for that matter.
 
   Key format: `trading:investor:<investorId>`
-    ```json
+
+```json
     {
       "id": "INV10001", 
       "name": "Johny M.", 
       "uid": "35178235834", 
       "pan": "AHUIOHO684" 
     }
-    ```
-
+```
+    
        id -> unique identifier of the investor
        name -> Name of the investor
        uid -> Unique government id (SSN, Aadhaar etc)
