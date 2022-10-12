@@ -57,9 +57,10 @@ have multiple such lots at a given time the aggregation of which will provide th
       "id": "SC61239693",
       "accountNo": "ACC10001", 
       "ticker": "RDBBANK",  
-      "date": "20/11/2018", 
-      "price": 14500, 
+      "date": 1665082800, 
+      "price": 14500.00, 
       "quantity": 10, 
+      "lotValue": 145000.0,
       "type": "EQUITY"         
     }
     ```
@@ -71,6 +72,7 @@ have multiple such lots at a given time the aggregation of which will provide th
        price -> Price at which the lot was bought. This would be integer. 
                 We will use lowest possible currency denomination (Cents, Paisa etc)
        quantity -> Total quantity of the lot
+       lotValue -> Total cost of the lot purchased. This is the actually the product of quantity and price. i.e (quantity * price)
        type -> Type of security. For our case, it would be 'EQUITY'
 
 4. Stock: This holds the information of the security or stock listed at the stock exchange. We will hold very basic details like name, code etc
