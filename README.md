@@ -131,8 +131,8 @@ We will build queries for following requirement:
 * Next, since we would be leveraging RediSearch to provide full-text indexing capabilites over JSON documents, we will execute suitable RediSearch index scripts. Execute following scripts:
 
 
-    FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.lotValue as lotValue NUMERIC $.date as date NUMERIC SORTABLE
-    FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
+      FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.lotValue as lotValue NUMERIC $.date as date NUMERIC SORTABLE
+      FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
 
 
 * Now, let's test the scenario by executing following RediSearch queries using either redis-cli or RedisInsight tool:
