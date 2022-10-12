@@ -101,10 +101,11 @@ have multiple such lots at a given time the aggregation of which will provide th
 ![class_trading drawio](https://user-images.githubusercontent.com/26322220/188601634-be8d8622-9d88-4973-9994-1113854cae05.png)
 
 
-### Get account level details  
+### Get portfolio details for an account 
 In a typical trading use case, there can be and there will be multiple use cases. Where one hand we may have very trivial 
 operations like fetching the investor details, getting account details etc then on the other hand we may see quite complicated queries as well like:
 getting the value of the securities an investor holds at a time, getting average cost price of the stocks purchased and so on.
+
 We will build queries for following requirement:
 1. Get all the security lots by account number/id
 2. Get all the security lots by account number/id and ticker
@@ -112,14 +113,7 @@ We will build queries for following requirement:
 4. Get total quantity of all securities inside investor's security portfolio at a particular time
 5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information
 
-Above use cases can be solved if we create suitable RediSearch indexes in our Redis cluster.
-Following are the 2 indexes and the corresponding queries which does that:
-
-    FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.lotValue as lotValue NUMERIC $.date as date NUMERIC SORTABLE
-    FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
-
-
-## Test the queries
+#### Test the scenario
 Firstly, you need to spin-up a new Redis Enterprise cluster or Redis Stack server.
 Then, for testing above scenarios we need to create above data models like investors, account, security_lot objects. 
 Here, we will ingest some fake data using `generator.py` python file.
@@ -132,7 +126,12 @@ For that execute:
 This will generate thousands of trading dataset like investor and account details and security lot informations. You may increase the value of '**ACCOUNT_COUNT**' parameter present in `app-config.properties` to generate more records (say millions of records).
 This will take some time depending upon the number of records you intend to generate.
 
-Once, completed go ahead and execute following queries using either redis-cli or RedisInsight tool the following queries:
+Next, since we would be leveraging RediSearch to provide full-text indexing capabilites over JSON documents, we will execute suitable RediSearch index scripts. Execute following scripts:
+
+    FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.lotValue as lotValue NUMERIC $.date as date NUMERIC SORTABLE
+    FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
+
+Now, let's test the scenario by executing following RediSearch queries using either redis-cli or RedisInsight tool:
 1. Get all the security lots by account number/id
      * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
 2. Get all the security lots by account number/id and ticker
@@ -144,6 +143,7 @@ Once, completed go ahead and execute following queries using either redis-cli or
 5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information.
      * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice`
 
+******************************************************
 
 ### Dynamic pricing and storage
 Stock pricing data is very dynamic and changes a lot during while trade is active. To address this problem we will use 
