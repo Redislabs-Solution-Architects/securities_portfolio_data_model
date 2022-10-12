@@ -70,10 +70,11 @@ have multiple such lots at a given time the aggregation of which will provide th
        ticker -> Unique stock ticker code listed in stock exchange
        date -> Date on which this lot was bought
        price -> Price at which the lot was bought. This would be integer. 
-                We will use lowest possible currency denomination (Cents, Paisa etc)
+                We will use lowest possible currency denomination (Cents, Paisa etc). For that we will multiply the value with 100.
        quantity -> Total quantity of the lot
        lotValue -> Total cost of the lot purchased. This is the actually the product of quantity and price. i.e (quantity * price)
        type -> Type of security. For our case, it would be 'EQUITY'
+ 
 
 4. Stock: This holds the information of the security or stock listed at the stock exchange. We will hold very basic details like name, code etc
 
@@ -104,10 +105,12 @@ have multiple such lots at a given time the aggregation of which will provide th
 In a typical trading use case, there can be and there will be multiple use cases. Where one hand we may have very trivial 
 operations like fetching the investor details, getting account details etc then on the other hand we may see quite complicated queries as well like:
 getting the value of the securities an investor holds at a time, getting average cost price of the stocks purchased and so on.
-We will build queries for:
+We will build queries for following requirement:
 1. Get all the security lots by account number/id
 2. Get all the security lots by account number/id and ticker
-3. Get avg cost price and total quantity of all security inside investor's security portfolio
+3. Get total quantity of all securities inside investor's security portfolio
+4. Get total quantity of all securities inside investor's security portfolio at a particular time
+5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information
 
 Above use cases can be solved if we create suitable RediSearch indexes in our Redis cluster.
 Following are the 2 indexes and the corresponding queries which does that:
@@ -116,7 +119,20 @@ Following are the 2 indexes and the corresponding queries which does that:
     FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
 
 
-**Queries** 
+## Test the queries
+Firstly, you need to spin-up a new Redis Enterprise cluster or Redis Stack server.
+Then, for testing above scenarios we need to create above data models like investors, account, security_lot objects. 
+Here, we will ingest some fake data using `generator.py` python file.
+For that execute:
+
+    source venv/bin/activate
+    pip3 install -r requirements.txt
+    python3 generator.py
+    
+This will generate thousands of trading dataset like investor and account details and security lot informations. You may increase the value of '**ACCOUNT_COUNT**' parameter present in `app-config.properties` to generate more records (say millions of records).
+This will take some time depending upon the number of records you intend to generate.
+
+Once, completed go ahead and execute following queries using either redis-cli or RedisInsight tool the following queries:
 1. Get all the security lots by account number/id
      * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
 2. Get all the security lots by account number/id and ticker
