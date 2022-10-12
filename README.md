@@ -120,10 +120,9 @@ We will build queries for following requirement:
   For that execute:
 
 
-    source venv/bin/activate
-    pip3 install -r requirements.txt
-    python3 generator.py
-
+      source venv/bin/activate
+      pip3 install -r requirements.txt
+      python3 generator.py
 
   This will generate thousands of trading dataset like investor and account details and security lot information. You may increase the value of '**ACCOUNT_COUNT**' parameter present in `app-config.properties` to generate more records (say millions of records).
   This will take some time depending upon the number of records you intend to generate.
