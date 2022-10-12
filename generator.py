@@ -15,8 +15,9 @@ def generate_trading_data(conn, file, ticker):
     chance = 70
     investorIdPrefix = "INV1000"
     accountIdPrefix = "ACC1000"
+    accountCount = configs.get("ACCOUNT_COUNT").data
     try:
-        for accs in range(1000):
+        for accs in range(accountCount):
             investorId = investorIdPrefix + str(accs)
             accountNo = accountIdPrefix + str(accs)
             securityLotPrefix = "trading:securitylot:" + accountNo + ":"
