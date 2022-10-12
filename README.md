@@ -134,6 +134,7 @@ We will build queries for following requirement:
     FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.lotValue as lotValue NUMERIC $.date as date NUMERIC SORTABLE
     FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
 
+
 * Now, let's test the scenario by executing following RediSearch queries using either redis-cli or RedisInsight tool:
   1. Get all the security lots by account number/id
        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
