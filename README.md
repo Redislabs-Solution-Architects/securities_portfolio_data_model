@@ -114,34 +114,37 @@ We will build queries for following requirement:
 5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information
 
 #### Test the scenario
-Firstly, you need to spin-up a new Redis Enterprise cluster or Redis Stack server.
-Then, for testing above scenarios we need to create above data models like investors, account, security_lot objects. 
-Here, we will ingest some fake data using `generator.py` python file.
-For that execute:
+* Firstly, you need to spin-up a new Redis Enterprise cluster or Redis Stack server.
+* Then, for testing above scenarios we need to create above data models like investors, account, security_lot objects. 
+  Here, we will ingest some fake data using `generator.py` python file.
+  For that execute:
 
-    source venv/bin/activate
-    pip3 install -r requirements.txt
-    python3 generator.py
-    
-This will generate thousands of trading dataset like investor and account details and security lot informations. You may increase the value of '**ACCOUNT_COUNT**' parameter present in `app-config.properties` to generate more records (say millions of records).
-This will take some time depending upon the number of records you intend to generate.
 
-Next, since we would be leveraging RediSearch to provide full-text indexing capabilites over JSON documents, we will execute suitable RediSearch index scripts. Execute following scripts:
+      source venv/bin/activate
+      pip3 install -r requirements.txt
+      python3 generator.py
 
-    FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.lotValue as lotValue NUMERIC $.date as date NUMERIC SORTABLE
-    FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
+  This will generate thousands of trading dataset like investor and account details and security lot information. You may increase the value of '**ACCOUNT_COUNT**' parameter present in `app-config.properties` to generate more records (say millions of records).
+  This will take some time depending upon the number of records you intend to generate.
 
-Now, let's test the scenario by executing following RediSearch queries using either redis-cli or RedisInsight tool:
-1. Get all the security lots by account number/id
-     * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
-2. Get all the security lots by account number/id and ticker
-     * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
-3. Get total quantity of all securities inside investor's security portfolio
-     * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
-4. Get total quantity of all securities inside investor's security portfolio at a particular time
-     * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
-5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information.
-     * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice`
+* Next, since we would be leveraging RediSearch to provide full-text indexing capabilites over JSON documents, we will execute suitable RediSearch index scripts. Execute following scripts:
+
+
+      FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC $.quantity as quantity NUMERIC $.lotValue as lotValue NUMERIC $.date as date NUMERIC SORTABLE
+      FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
+
+
+* Now, let's test the scenario by executing following RediSearch queries using either redis-cli or RedisInsight tool:
+  1. Get all the security lots by account number/id
+       * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
+  2. Get all the security lots by account number/id and ticker
+       * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
+  3. Get total quantity of all securities inside investor's security portfolio
+       * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
+  4. Get total quantity of all securities inside investor's security portfolio at a particular time
+       * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
+  5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information.
+       * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice`
 
 ******************************************************
 
