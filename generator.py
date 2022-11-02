@@ -15,7 +15,7 @@ def generate_trading_data(conn, file, ticker):
     chance = 70
     investorIdPrefix = "INV1000"
     accountIdPrefix = "ACC1000"
-    accountCount = configs.get("ACCOUNT_COUNT").data
+    accountCount = int(configs.get("ACCOUNT_COUNT").data)
     try:
         for accs in range(accountCount):
             investorId = investorIdPrefix + str(accs)
@@ -50,6 +50,7 @@ def generate_trading_data(conn, file, ticker):
                         "lotValue": buyingPrice*quantity, "type": "EQUITY"
                     }
                     conn.json().set(securityLotPrefix + secLotId, "$", securityLot)
+            print("Generated data for account "+str(accs+1) +" of "+str(accountCount))
     except Exception as inst:
         print(type(inst))
         print("Exception occurred while generating trading data")
