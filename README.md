@@ -138,7 +138,7 @@ We will build queries for following requirement:
   1. Get all the security lots by account number/id
        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
   2. Get all the security lots by account number/id and ticker
-       * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
+       * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBMOTORS}'` 
   3. Get total quantity of all securities inside investor's security portfolio
        * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
   4. Get total quantity of all securities inside investor's security portfolio at a particular time
