@@ -117,8 +117,7 @@ We will build queries for following requirement:
 * Firstly, you need to spin-up a new Redis Enterprise cluster or Redis Stack server.
 * Then, for testing above scenarios we need to create above data models like investors, account, security_lot objects. 
   Here, we will ingest considerable amount of stock-purchase data for multiple accounts pertaining to 2 stocks: RDBMOTORS and RDBFOODS. 
-  For this, we will use `generator.py` python file.
-  For that execute:
+  For this, we will use `generator.py` file and execute following steps:
 
 
       source venv/bin/activate
