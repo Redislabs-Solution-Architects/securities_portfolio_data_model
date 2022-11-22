@@ -116,7 +116,8 @@ We will build queries for following requirement:
 #### Test the scenario
 * Firstly, you need to spin-up a new Redis Enterprise cluster or Redis Stack server.
 * Then, for testing above scenarios we need to create above data models like investors, account, security_lot objects. 
-  Here, we will ingest some fake data using `generator.py` python file.
+  Here, we will ingest considerable amount of stock-purchase data for multiple accounts pertaining to 2 stocks: RDBMOTORS and RDBFOODS. 
+  For this, we will use `generator.py` python file.
   For that execute:
 
 
@@ -136,7 +137,7 @@ We will build queries for following requirement:
 
 * Now, let's test the scenario by executing following RediSearch queries using either redis-cli or RedisInsight tool:
   1. Get all the security lots by account number/id
-       * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
+       * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)'`
   2. Get all the security lots by account number/id and ticker
        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBMOTORS}'` 
   3. Get total quantity of all securities inside investor's security portfolio
