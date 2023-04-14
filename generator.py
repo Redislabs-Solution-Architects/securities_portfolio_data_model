@@ -3,6 +3,7 @@ from faker import Faker
 from jproperties import Properties
 import time
 import pandas as pd
+import os
 
 configs = Properties()
 with open('./config/app-config.properties', 'rb') as config_file:
@@ -57,7 +58,9 @@ def generate_trading_data(conn, file, ticker):
 
 
 if __name__ == '__main__':
-    conn = redis.Redis(host=configs.get("HOST").data, port=configs.get("PORT").data, password=configs.get("PASSWORD").data)
+    conn = redis.Redis(host=os.getenv('HOST', "localhost"),
+                       port=os.getenv('PORT', 6379),
+                       password=os.getenv('PASSWORD', "admin"))
     if not conn.ping():
         raise Exception('Redis unavailable')
     try:

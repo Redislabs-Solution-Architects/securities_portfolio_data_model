@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 from flask import Flask, redirect, url_for, request, render_template
 from jproperties import Properties
+import os
 
 global app
 
@@ -12,7 +13,10 @@ global app
 configs = Properties()
 with open('./config/app-config.properties', 'rb') as config_file:
     configs.load(config_file)
-r = redis.Redis(host=configs.get("HOST").data, port=configs.get("PORT").data, password=configs.get("PASSWORD").data, decode_responses=True)
+r = redis.Redis(host=os.getenv('HOST', "localhost"),
+                port=os.getenv('PORT', 6379),
+                password=os.getenv('PASSWORD', "admin"),
+                decode_responses=True)
 app = Flask(__name__)
 sock = Sock(app)
 ts = r.ts()
