@@ -20,7 +20,6 @@
     <!-- Custom styles for this template-->
     <link href="{{ url_for('static', filename = 'css/sb-admin-2.min.css') }}" rel="stylesheet">
 
-
 </head>
 
 <body id="page-top">
@@ -30,15 +29,16 @@
 
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-            <!-- Nav Item - Dashboard -->
+
             <li class="nav-item active">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="#">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Stock trading demo</span></a>
             </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
+
 
         </ul>
         <!-- End of Sidebar -->
@@ -53,6 +53,20 @@
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
+
+                        <li class="nav-item dropdown no-arrow">
+                            <div class="nav-link dropdown-toggle">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Stock</span>
+                                <form id="stockForm" action="/stock-stats" method="post">
+                                    <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="stockSelector" name="stockSelector">
+                                        <option value="RDBBANK">RDBBANK</option>
+                                        <option value="RDBMOTORS">RDBMOTORS</option>
+                                    </select>
+                                    <input type="hidden" id="stockHid" value="{{stock}}">
+                                </form>
+                            </div>
+                        </li>
+
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
@@ -83,7 +97,7 @@
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                                 Stock</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stockSymbol">RDBBANK (isin:NSE112143)</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stockSymbol">RDBBANK (isin:NSE112143) </div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -209,20 +223,6 @@
 
     <!-- Page level custom scripts -->
     <script src="{{ url_for('static', filename = 'js/demo/chart-area-demo.js') }}"></script>
-
-    <script language="JavaScript">
-      const socket = new WebSocket('ws://' + location.host + '/price/RDBBANK');
-
-      socket.addEventListener('message', ev => {
-        id="currentPrice"
-        data = JSON.parse(ev.data)
-        document.getElementById('stockSymbol').innerHTML = data.stockSymbol
-        document.getElementById('currentPrice').innerHTML = data.currentPrice
-        document.getElementById('minPrice').innerHTML = data.minPrice
-        document.getElementById('maxPrice').innerHTML = data.maxPrice
-      });
-
-    </script>
 
 </body>
 
