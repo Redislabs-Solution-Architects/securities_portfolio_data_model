@@ -26,6 +26,10 @@ ts = r.ts()
 def overview():
     return render_template('overview.html')
 
+@app.route('/stock-stats',methods = ['POST'])
+def getstats():
+    stock = request.form['stockSelector']
+    return render_template('overview.html', stock=stock)
 
 @sock.route('/price/<ticker>')
 def price(sock, ticker):
