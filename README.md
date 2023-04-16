@@ -265,7 +265,8 @@ Execute following steps to run this demo:
 [http://localhost:5555](http://localhost:5555) and observe the data in action. 
 You will see the current price, day low, day high and the intra-day trend.
 
-![image](https://user-images.githubusercontent.com/26322220/190096310-1c3ab7b2-9f9f-46ae-aebd-07b5ffe5bced.png)
+![image](https://user-images.githubusercontent.com/26322220/232309062-e81a7354-1733-4609-a94e-8a3ebe7a363c.png)
+
 
 ## Dynamic security pricing using docker
 The individual apps like price_producer, consumer and UI server has been dockerised and present in docker hub.
