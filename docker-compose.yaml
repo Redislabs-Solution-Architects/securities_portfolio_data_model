@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  server:
+    image: "abhishekcoder/sample_trading_data_model:server"
+    env_file:
+      - docker-compose-redis-variables.env
+    depends_on:
+      - price_producer
+    build: .
+    ports:
+      - "127.0.0.1:5555:5555"
+      
+  price_producer:
+    image: "abhishekcoder/sample_trading_data_model:price_producer"
+    env_file:
+      - docker-compose-redis-variables.env
+    restart: always
+
+  consumer:
+    image: "abhishekcoder/demo.streams.consumer:latest"
+    env_file:
+      - docker-compose-redis-variables.env
+    depends_on:
+      - price_producer
