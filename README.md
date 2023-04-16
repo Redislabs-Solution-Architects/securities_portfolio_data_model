@@ -243,10 +243,11 @@ Execute following steps to run this demo:
         docker run -p 127.0.0.1:8080:8080 -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSOWRD>> abhishekcoder/demo.streams.consumer:latest
 5. Next, push the pricing changes into the Redis Streams. For this run the `price_producer.py`.
    use this:
-   
-    source venv/bin/activate
-    pip3 install -r requirements.txt
-    python3 price_producer.py
+
+
+     source venv/bin/activate
+     pip3 install -r requirements.txt
+     python3 price_producer.py
 
    If successfully started, it will start pushing the ticker prices into the Redis Streams.
 6. You may notice, the stream consumer we started in step 1 will begin to process the messages and will push them 
@@ -265,4 +266,31 @@ Execute following steps to run this demo:
 You will see the current price, day low, day high and the intra-day trend.
 
 ![image](https://user-images.githubusercontent.com/26322220/190096310-1c3ab7b2-9f9f-46ae-aebd-07b5ffe5bced.png)
+
+## Dynamic security pricing using docker
+The individual apps like price_producer, consumer and UI server has been dockerised and present in docker hub.
+This gives us an easy way to bootstrap all the apps and test the results quickly. 
+Deploy Redis Enterprise cluster. Note down its URL, port, password and execute following containers in order:
+
+`docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:price_producer`
+
+`docker run -p 127.0.0.1:5555:5555 -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:server`
+
+`docker run -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSWORD> abhishekcoder/demo.streams.consumer:latest`
+
+Open http://localhost:5555 and check the result
+
+## Dynamic security pricing using docker-compose
+We can execute the entire application stack using docker-compose. 
+The `docker-compose.yaml` file is present in the application directory.
+Just change the desired variables in `docker-compose-redis-variables.env` file and execute the following command. 
+Wait for a minute and 
+open http://localhost:5555 to check the result.
+
+`docker compose run`
+
+To shutdown the applications, execute this command:
+
+`docker compose down`
+
 
