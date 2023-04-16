@@ -287,7 +287,7 @@ Just change the desired variables in `docker-compose-redis-variables.env` file a
 Wait for a minute and 
 open http://localhost:5555 to check the result.
 
-`docker compose run`
+`docker compose up`
 
 To shutdown the applications, execute this command:
 
