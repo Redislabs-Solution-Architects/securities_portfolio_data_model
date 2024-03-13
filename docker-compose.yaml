@@ -19,8 +19,8 @@ services:
       - redis
     restart: always
 
-  consumer:
-    image: "abhishekcoder/demo.streams.consumer:latest"
+  deaggregator:
+    image: "abhishekcoder/sample_trading_data_model:deaggregator"
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
