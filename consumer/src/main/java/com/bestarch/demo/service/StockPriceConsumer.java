@@ -20,7 +20,7 @@ import com.redis.lettucemod.timeseries.Sample;
 @Component
 public class StockPriceConsumer implements StreamListener<String, MapRecord<String, String, String>> {
 	
-	private Logger logger = LoggerFactory.getLogger(StockPriceConsumer.class);
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Value("${price.update.stream}")
 	private String priceUpdateStream;
@@ -41,7 +41,7 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 			StockPriceStreamRecord rec = objectMapper.convertValue(values, StockPriceStreamRecord.class);
 			ts.tsAdd("price_history_ts:"+rec.getTicker(), Sample.of(rec.getDateInUnix(), rec.getPrice()));
 		} catch (Exception e) {
-			//logger.error("An exception occurred while consuming the message. Ignoring the error", e);
+			logger.error("An exception occurred while consuming the message. Ignoring the error", e);
 		} finally {
 			try {
 				pool.returnObject(connection);

@@ -31,8 +31,8 @@ def ingestionTask(stock, price_stream_name, priceCol):
 
 if __name__ == '__main__':
 
-    conn = redis.Redis(host=os.getenv('HOST', "redis-14675.c301.ap-south-1-1.ec2.cloud.redislabs.com"),
-                       port=os.getenv('PORT', 14675),
+    conn = redis.Redis(host=os.getenv('HOST', "localhost"),
+                       port=os.getenv('PORT', 6379),
                        password=os.getenv('PASSWORD', "admin"))
     if not conn.ping():
         raise Exception('Redis unavailable')

@@ -1,6 +1,7 @@
 package com.bestarch.demo.config;
 
 import java.net.InetAddress;
+
 import java.net.UnknownHostException;
 import java.time.Duration;
 
@@ -25,8 +26,13 @@ import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer.StreamMessageListenerContainerOptions;
 import org.springframework.data.redis.stream.Subscription;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Configuration
 class RedisConfiguration {
+	
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Value("${price.update.stream}")
 	private String priceUpdateStream;
@@ -71,7 +77,7 @@ class RedisConfiguration {
 		try {
 			template.opsForStream().createGroup(priceUpdateStream, priceUpdateStream);
 		} catch (DataAccessException e) {
-			System.out.println("Ignoring the exception. Redis Stream group may be present already. Skipping it");
+			logger.info("Ignoring the exception. Redis Stream group may be present already. Skipping it");
 		}
 
 		return template;

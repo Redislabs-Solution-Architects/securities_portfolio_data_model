@@ -5,6 +5,7 @@ services:
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
+      - redis
       - price_producer
     build: .
     ports:
@@ -14,6 +15,8 @@ services:
     image: "abhishekcoder/sample_trading_data_model:price_producer"
     env_file:
       - docker-compose-redis-variables.env
+    depends_on:
+      - redis
     restart: always
 
   consumer:
@@ -21,4 +24,18 @@ services:
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
+      - redis
       - price_producer
+
+  redis:
+    image: "redis/redis-stack:latest"
+    env_file:
+      - docker-compose-redis-variables.env
+    command: /bin/sh -c "redis-stack-server --requirepass $$PASSWORD"
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
