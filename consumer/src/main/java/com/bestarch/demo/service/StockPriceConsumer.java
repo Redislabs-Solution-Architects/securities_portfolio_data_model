@@ -41,7 +41,7 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 			StockPriceStreamRecord rec = objectMapper.convertValue(values, StockPriceStreamRecord.class);
 			ts.tsAdd("price_history_ts:"+rec.getTicker(), Sample.of(rec.getDateInUnix(), rec.getPrice()));
 		} catch (Exception e) {
-			logger.error("An exception occurred while consuming the message. Ignoring the error", e);
+			//logger.error("An exception occurred while consuming the message. Ignoring the error", e);
 		} finally {
 			try {
 				pool.returnObject(connection);
