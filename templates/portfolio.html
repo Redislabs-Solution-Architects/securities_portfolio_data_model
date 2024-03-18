@@ -11,14 +11,17 @@
 
     <title>Stock trading demo</title>
 
-    <!-- Custom fonts for this template-->
+    <!-- Custom fonts for this template -->
     <link href="{{ url_for('static', filename = 'vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
-    <!-- Custom styles for this template-->
-    <link href="{{ url_for('static', filename = 'css/sb-admin-2.min.css') }}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static', filename = 'css/sb-admin-2.min.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- Custom styles for this page -->
+    <link href="{{ url_for('static', filename = 'vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
 
 </head>
 
@@ -27,7 +30,7 @@
     <!-- Page Wrapper -->
     <div id="wrapper">
 
-        <!-- Sidebar -->
+
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <a class="sidebar-brand d-flex align-items-left justify-content-left" href="#">
@@ -50,7 +53,6 @@
             </li>
 
         </ul>
-        <!-- End of Sidebar -->
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
@@ -60,21 +62,17 @@
 
                 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <form class="form-inline">
+                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                    </form>
+
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
-
-                        <li class="nav-item dropdown no-arrow">
-                            <div class="nav-link dropdown-toggle">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Stock</span>
-                                <form id="stockForm" action="/stock-stats" method="post">
-                                    <select class="form-select form-select-sm " aria-label=".form-select-sm example" id="stockSelector" name="stockSelector">
-                                        <option class="dropdown-item" value="RDBBANK">RDBBANK</option>
-                                        <option class="dropdown-item" value="RDBMOTORS">RDBMOTORS</option>
-                                    </select>
-                                    <input type="hidden" id="stockHid" value="{{stock}}">
-                                </form>
-                            </div>
-                        </li>
+                        <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
@@ -86,6 +84,7 @@
                             </a>
                         </li>
                     </ul>
+
                 </nav>
                 <!-- End of Topbar -->
 
@@ -93,20 +92,61 @@
                 <div class="container-fluid">
 
                     <!-- Page Heading -->
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Overview</h1>
+                    <h1 class="h3 mb-2 text-gray-800">User transactions</h1>
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Search user transactions</h6>
+                        </div>
+
+                        <div class="card-body">
+                            <form action="" class="form-inline pb-2">
+<!--                                <div class="form-group mx-3">-->
+<!--                                        <label class="mr-2">Investor#</label><input type="text" id="investorId" class="form-control" placeholder="" >-->
+<!--                                </div>-->
+                                <div class="form-group mx-3">
+                                        <label class="mr-2">A/C#</label><input type="text" id="accountId" class="form-control" placeholder="" >
+                                </div>
+                                <div class="form-group mx-3">
+                                        <label class="mr-2">Stock</label><input type="text" id="stockId" class="form-control" placeholder="" >
+                                </div>
+                                <button type="button" id="resultBtnId" class="btn btn-info">Get result</button>
+
+                            </form>
+<!--                            <div class="small mx-3 mb-4" id="metaDiv"></div>-->
+
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr class="info">
+                                            <th>A/C #</th>
+<!--                                            <th>A/C holder name</th>-->
+                                            <th>Stock</th>
+                                            <th>Date</th>
+                                            <th>Price (INR)</th>
+                                            <th>Quantity</th>
+                                            <th>Total value (INR)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <!-- Content Row -->
-                    <div class="row">
-                        <div class="col-xl-3 col-md-6 mb-4">
+
+                    <div class="row" id="accDetailDiv">
+
+                        <div class="col-xl-3 col-md-3 mb-4">
                             <div class="card border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Stock</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="stockSymbol">RDBBANK (isin:NSE112143) </div>
+                                            <div class="text-xs font-weight-bold text-primary mb-1">
+                                                Number of stocks held</div>
+                                            <div class="h5 mb-0 font-weight-bold small text-gray-800" id="totalSecurityCount"></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -116,14 +156,14 @@
                             </div>
                         </div>
 
-                        <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="col-xl-3 col-md-3 mb-4">
                             <div class="card border-left-success shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Current price</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="currentPrice">INR 145.00</div>
+                                            <div class="text-xs font-weight-bold text-success mb-1">
+                                                Stocks as on  </div>
+                                            <div class="h5 mb-0 font-weight-bold small text-gray-800" id="totalSecurityCountByTime"></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -133,72 +173,35 @@
                             </div>
                         </div>
 
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
+                        <div class="col-xl-3 col-md-3 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Day minimum
-                                            </div>
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800" id="minPrice">INR 144.00</div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="progress progress-sm mr-2">
-                                                        <div class="progress-bar bg-info" role="progressbar"
-                                                            style="width: 50%" aria-valuenow="20" aria-valuemin="0"
-                                                            aria-valuemax="100"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <div class="text-xs font-weight-bold text-success mb-1">
+                                                Average cost/unit </div>
+                                            <div class="h5 mb-0 font-weight-bold small text-gray-800" id="avgCostPriceByTime"></div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="col-xl-3 col-md-3 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Day maximum</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="maxPrice">INR 147.34</div>
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Portfolio value </div>
+                                            <div class="h5 mb-0 font-weight-bold small text-gray-800" id="portfolioValue"></div>
                                         </div>
-                                        <div class="col">
-                                                    <div class="progress progress-sm mr-2">
-                                                        <div class="progress-bar bg-info" role="progressbar"
-                                                            style="width: 50%" aria-valuenow="100" aria-valuemin="0"
-                                                            aria-valuemax="100"></div>
-                                                    </div>
-                                                </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-
-                        <!-- Area Chart -->
-                        <div class="col-xl-12 col-lg-10">
-                            <div class="card shadow mb-4">
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Intra-day trend</h6>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <div class="chart-area">
-                                        <canvas id="myAreaChart"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -211,11 +214,18 @@
 
             </div>
             <!-- End of Main Content -->
-       </div>
+
+        </div>
         <!-- End of Content Wrapper -->
 
     </div>
     <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
 
     <!-- Bootstrap core JavaScript-->
     <script src="{{ url_for('static', filename = 'vendor/jquery/jquery.min.js') }}"></script>
@@ -228,10 +238,12 @@
     <script src="{{ url_for('static', filename = 'js/sb-admin-2.min.js') }}"></script>
 
     <!-- Page level plugins -->
-    <script src="{{ url_for('static', filename = 'vendor/chart.js/Chart.min.js') }}"></script>
 
-    <!-- Page level custom scripts -->
-    <script src="{{ url_for('static', filename = 'js/demo/chart-area-demo.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'vendor/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'vendor/moment.min.js') }}"></script>
+
+    <script src="{{ url_for('static', filename = 'js/demo/portfolio.js') }}"></script>
 
 </body>
 
