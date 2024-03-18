@@ -19,9 +19,12 @@ def generate_investor_account_data(conn):
         for accs in range(accountCount):
             investorId = investorIdPrefix + str(accs)
             accountNo = accountIdPrefix + str(accs)
+            name = fake.name()
+            address = fake.address()
             investor = {
-                "id": investorId, "name": fake.name(), "uid": fake.aadhaar_id(),
-                "pan": fake.bothify("?????####?"), "email": fake.email(), "phone": fake.phone_number()
+                "id": investorId, "name": name, "uid": fake.aadhaar_id(),
+                "pan": fake.bothify("?????####?"), "email": fake.email(), "phone": fake.phone_number(),
+                "address": address
             }
             account = {
                 "id": accountNo, "investorId": investorId, "accountNo": accountNo,
