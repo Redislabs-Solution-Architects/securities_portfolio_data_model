@@ -65,6 +65,9 @@ def tnxResultsTemp(request):
 
 
 def tnxResults(request):
+    #########################################
+    ## Query used: FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBMOTORS}'
+    #########################################
     account = request.args.get("account")
     stock = request.args.get("stock")
     #investor = request.args.get("investor")
@@ -98,7 +101,9 @@ def accountstats():
     account = request.args.get("account")
     result = {}
 
-    # totalSecurityCount
+    ## Get the count of securities for a given account number
+    ## Query used:
+    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity
     req = (aggregations.AggregateRequest(f"@accountNo: ({account})")
            .group_by(['@ticker'], reducers.sum('@quantity').alias('totalQuantity')))
     res = r.ft("idx_trading_security_lot").aggregate(req).rows
@@ -108,7 +113,9 @@ def accountstats():
         totalSecurityCount.append(rec[1] + " [" + format(int(rec[3]), ',')+"]</br>")
     result['totalSecurityCount'] = totalSecurityCount
 
-    # totalSecurityCountByTime
+    ## Get the count of securities upto a given time for a provided account number
+    ## Query used:
+    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity
     req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1665082800]")
            .group_by(['@ticker'], reducers.sum('@quantity').alias('totalQuantity')))
     res = r.ft("idx_trading_security_lot").aggregate(req).rows
@@ -117,7 +124,10 @@ def accountstats():
         totalSecurityCountByTime.append(rec[1] + " [" + format(int(rec[3]), ',')+"]</br>")
     result['totalSecurityCountByTime'] = totalSecurityCountByTime
 
-    # avgCostPriceByTime
+    ## Get the average cost of each stocks for a given account number and time-frame
+    ## Query used:
+    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker
+    ##       reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice
     req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1665498506]")
            .group_by('@ticker', reducers.sum('@lotValue').alias('totalLotValue'), reducers.sum('@quantity').alias('totalQuantity'))
            .apply(avgPrice="@totalLotValue/(@totalQuantity*100)"))
@@ -128,7 +138,11 @@ def accountstats():
         avgCostPriceByTime.append(rec[1] + " [INR " + format(float(rec[7]), ',.2f')+"]</br>")
     result['avgCostPriceByTime'] = avgCostPriceByTime
 
-    # portfolioValue
+    ## get the total portfolio value for a given account number
+    ## Query used:
+    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC1000)' groupby 1 @ticker
+    ##       reduce sum 1 @lotValue as totalLotValue apply '(@totalLotValue/100)' as portfolioFolioValue
+
     req = (aggregations.AggregateRequest(f"@accountNo: ({account})")
            .group_by([], reducers.sum('@lotValue').alias('totalLotValue'))
            .apply(portfolioValue="@totalLotValue/100"))
@@ -191,26 +205,29 @@ def intraDayTrend(sock, ticker):
 
 
 def createIndexes():
-    # Creating index having definition::
     # FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot:
-    # SCHEMA $.accountNo as accountNo TEXT
-    # $.ticker as ticker TAG
-    # $.price as price NUMERIC SORTABLE
-    # $.quantity as quantity NUMERIC SORTABLE
-    # $.date as date NUMERIC SORTABLE
+    # SCHEMA
+    #   $.accountNo as accountNo TEXT
+    #   $.ticker as ticker TAG
+    #   $.price as price NUMERIC SORTABLE
+    #   $.quantity as quantity NUMERIC SORTABLE
+    #   $.lotValue as lotValue NUMERIC SORTABLE
+    #   $.date as date NUMERIC SORTABLE
     schema = (TextField("$.accountNo", as_name="accountNo"),
               TagField("$.ticker", as_name="ticker"),
               NumericField("$.price", as_name="price", sortable=True),
               NumericField("$.quantity", as_name="quantity", sortable=True),
+              NumericField("$.lotValue", as_name="lotValue", sortable=True),
               NumericField("$.date", as_name="date", sortable=True))
     r.ft("idx_trading_security_lot").create_index(schema, definition=IndexDefinition(prefix=["trading:securitylot:"],
                                                                                      index_type=IndexType.JSON))
     # Creating index having definition::
     # FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account:
-    # SCHEMA $.accountNo as accountNo TEXT
-    # $.address as address TEXT
-    # $.retailInvestor as retailInvestor TAG
-    # $.accountOpenDate as accountOpenDate TEXT
+    # SCHEMA
+    #   $.accountNo as accountNo TEXT
+    #   $.address as address TEXT
+    #   $.retailInvestor as retailInvestor TAG
+    #   $.accountOpenDate as accountOpenDate TEXT
     schema = (TextField("$.accountNo", as_name="accountNo"),
               TextField("$.address", as_name="address"),
               TagField("$.retailInvestor", as_name="retailInvestor"),
