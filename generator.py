@@ -37,12 +37,18 @@ def generate_investor_account_data(conn):
             conn.json().set("trading:investor:" + investorId, "$", investor)
             conn.json().set("trading:account:" + accountNo, "$", account)
 
-            # Generating trading data for 2 stocks: RDBFOODS and RDBMOTORS
+            # Generating purchase transaction data for 3 stocks: RDBBANK, RDBFOODS and RDBMOTORS
+            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
+            print(f"Created RDBBANK portfolio data for investor {investorId} with accountNo {accountNo}.")
+
             generate_trading_data(conn, "files/rdbfoods.csv", "RDBFOODS", accountNo)
             print(f"Created RDBFOODS portfolio data for investor {investorId} with accountNo {accountNo}.")
 
             generate_trading_data(conn, "files/rdbmotors.csv", "RDBMOTORS", accountNo)
             print(f"Created RDBMOTORS portfolio data for investor {investorId} with accountNo {accountNo}.")
+
+            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
+            print(f"Created RDBBANK portfolio data for investor {investorId} with accountNo {accountNo}.")
 
             print("Data generated - "+str(accs+1) +" of "+str(accountCount))
     except Exception as inst:
@@ -64,7 +70,7 @@ def generate_trading_data(conn, file, ticker, accountNo):
                 dateInUnix = int(time.mktime(time.strptime(stock['Date '][i], "%d-%b-%Y")))
                 buyingPrice = float(str(stock['OPEN '][i]).replace(',', '')) * 100
 
-                quantity = fake.pyint(min_value=5, max_value=100)
+                quantity = fake.pyint(min_value=5, max_value=50)
                 secLotId = fake.lexify("????").upper() + str(i) + str(fake.random_number(digits=8, fix_len=True))
                 securityLot = {
                     "id": secLotId, "accountNo": accountNo, "ticker": ticker,

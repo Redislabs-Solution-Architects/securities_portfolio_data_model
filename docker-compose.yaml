@@ -7,6 +7,7 @@ services:
     depends_on:
       - redis
       - price_producer
+      - deaggregator
     build: .
     ports:
       - "127.0.0.1:5555:5555"
@@ -26,6 +27,14 @@ services:
     depends_on:
       - redis
       - price_producer
+
+  tnx_generator:
+    image: "abhishekcoder/sample_trading_data_model:generator"
+    env_file:
+      - docker-compose-redis-variables.env
+    depends_on:
+      - redis
+    restart: always
 
   redis:
     image: "redis/redis-stack:latest"
