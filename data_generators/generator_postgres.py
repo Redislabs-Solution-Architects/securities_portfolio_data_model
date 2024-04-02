@@ -6,7 +6,7 @@ import os
 import psycopg2
 
 configs = Properties()
-with open('../config/app-config.properties', 'rb') as config_file:
+with open('config/app-config.properties', 'rb') as config_file:
     configs.load(config_file)
 Faker.seed(0)
 fake = Faker('en_IN')
@@ -32,10 +32,10 @@ def generate_investor_account_data(conn):
             accountCloseDate = ''
             retailInvestor = True
             pgaccount = curs.execute('INSERT INTO account (id,"investorId","accountNo","accountOpenDate","accountCloseDate","retailInvestor") values (%s,%s,%s,%s,%s,%s)' ,(accountNo,investorId,accountNo,accountOpenDate,accountCloseDate,retailInvestor))
-            generate_trading_data(conn, "../files/rdbbank.csv", "RDBBANK", accountNo)
-            generate_trading_data(conn, "../files/rdbfoods.csv", "RDBFOODS", accountNo)
-            generate_trading_data(conn, "../files/rdbmotors.csv", "RDBMOTORS", accountNo)
-            generate_trading_data(conn, "../files/rdbbank.csv", "RDBBANK", accountNo)
+            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
+            generate_trading_data(conn, "files/rdbfoods.csv", "RDBFOODS", accountNo)
+            generate_trading_data(conn, "files/rdbmotors.csv", "RDBMOTORS", accountNo)
+            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
             print("Data generated - "+str(accs+1) +" of "+str(accountCount))
     except Exception as inst:
         print(type(inst))
