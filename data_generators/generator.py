@@ -6,7 +6,7 @@ import pandas as pd
 import os
 
 configs = Properties()
-with open('./config/app-config.properties', 'rb') as config_file:
+with open('../config/app-config.properties', 'rb') as config_file:
     configs.load(config_file)
 Faker.seed(0)
 fake = Faker('en_IN')
@@ -38,16 +38,16 @@ def generate_investor_account_data(conn):
             conn.json().set("trading:account:" + accountNo, "$", account)
 
             # Generating purchase transaction data for 3 stocks: RDBBANK, RDBFOODS and RDBMOTORS
-            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
+            generate_trading_data(conn, "../files/rdbbank.csv", "RDBBANK", accountNo)
             print(f"Created RDBBANK portfolio data for investor {investorId} with accountNo {accountNo}.")
 
-            generate_trading_data(conn, "files/rdbfoods.csv", "RDBFOODS", accountNo)
+            generate_trading_data(conn, "../files/rdbfoods.csv", "RDBFOODS", accountNo)
             print(f"Created RDBFOODS portfolio data for investor {investorId} with accountNo {accountNo}.")
 
-            generate_trading_data(conn, "files/rdbmotors.csv", "RDBMOTORS", accountNo)
+            generate_trading_data(conn, "../files/rdbmotors.csv", "RDBMOTORS", accountNo)
             print(f"Created RDBMOTORS portfolio data for investor {investorId} with accountNo {accountNo}.")
 
-            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
+            generate_trading_data(conn, "../files/rdbbank.csv", "RDBBANK", accountNo)
             print(f"Created RDBBANK portfolio data for investor {investorId} with accountNo {accountNo}.")
 
             print("Data generated - "+str(accs+1) +" of "+str(accountCount))

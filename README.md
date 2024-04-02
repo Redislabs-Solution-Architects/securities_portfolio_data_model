@@ -115,12 +115,11 @@ We will build queries for following requirement:
 * Firstly, you need to spin-up a new Redis Enterprise cluster or Redis Stack server.
 * Then, for testing above scenarios we need to create above data models like investors, account, security_lot objects. 
   Here, we will ingest considerable amount of stock-purchase data for multiple accounts pertaining to 2 stocks: RDBMOTORS and RDBFOODS. 
-  For this, we will use `generator.py` file and execute following steps:
-
+  For this, we will use `generator.py` file present in `data_generators` folder (used to ingest data into Redis) and execute following steps:
 
       source venv/bin/activate
       pip3 install -r requirements.txt
-      python3 generator.py
+      python3 data_generators/generator.py
 
   This will generate thousands of trading dataset like investor and account details and security lot information. You may increase the value of '**ACCOUNT_COUNT**' parameter present in `app-config.properties` to generate more records (say millions of records).
   This will take some time depending upon the number of records you intend to generate.
@@ -216,7 +215,7 @@ get the trend by days, weeks, months, years etc.
 Execute following steps to run this demo:
 
 1. To test our investors, account, security_lot data models, we need to add some test data. For that purpose,
-   let's execute `generator.py`. This will add some test intra-day data for RDBBANK and RDBMOTORS securities.
+   let's execute `generator.py` present in `data_generators` folder (used to ingest data into Redis). This will add some test intra-day data for RDBBANK and RDBMOTORS securities.
 
 2. Next we will execute following RediSearch indexes before actually running any queries:
 
