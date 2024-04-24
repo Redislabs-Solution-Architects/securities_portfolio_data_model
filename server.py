@@ -8,6 +8,7 @@ from jproperties import Properties
 import os
 import copy
 import logging
+import traceback
 
 from redis.commands.search.field import NumericField, TextField, TagField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
@@ -22,10 +23,23 @@ global app
 configs = Properties()
 with open('./config/app-config.properties', 'rb') as config_file:
     configs.load(config_file)
-r = redis.Redis(host=os.getenv('HOST', "localhost"),
-                port=os.getenv('PORT', 6379),
-                password=os.getenv('PASSWORD', "admin"),
-                decode_responses=True)
+
+try:
+    password = os.getenv('PASSWORD')
+    if not (password and password.strip()):
+        r = redis.Redis(host=os.getenv('HOST', "localhost"),
+                        port=os.getenv('PORT', 6379),
+                        decode_responses=True)
+    else:
+        r = redis.Redis(host=os.getenv('HOST', "localhost"),
+                        port=os.getenv('PORT', 6379),
+                        password=password,
+                        decode_responses=True)
+    r.ping()
+except Exception:
+    traceback.print_exc()
+    raise Exception('Redis unavailable')
+
 app = Flask(__name__)
 sock = Sock(app)
 ts = r.ts()

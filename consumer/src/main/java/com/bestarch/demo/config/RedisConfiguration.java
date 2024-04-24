@@ -26,6 +26,8 @@ import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer.StreamMessageListenerContainerOptions;
 import org.springframework.data.redis.stream.Subscription;
 
+import io.micrometer.core.instrument.util.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,8 +55,10 @@ class RedisConfiguration {
 	public RedisConnectionFactory redisConnectionFactory() {
 		RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(server,
 				Integer.valueOf(port));
-		RedisPassword rp = RedisPassword.of(pswd);
-		redisStandaloneConfiguration.setPassword(rp);
+		if (StringUtils.isNotBlank(pswd)) {
+			RedisPassword rp = RedisPassword.of(pswd);
+			redisStandaloneConfiguration.setPassword(rp);
+		} 
 		return new LettuceConnectionFactory(redisStandaloneConfiguration);
 	}
 	

@@ -4,6 +4,7 @@ import pandas as pd
 from jproperties import Properties
 import threading
 import os
+import traceback
 
 configs = Properties()
 with open('./config/app-config.properties', 'rb') as config_file:
@@ -30,12 +31,22 @@ def ingestionTask(stock, price_stream_name, priceCol):
 
 
 if __name__ == '__main__':
-
-    conn = redis.Redis(host=os.getenv('HOST', "localhost"),
-                       port=os.getenv('PORT', 6379),
-                       password=os.getenv('PASSWORD', "admin"))
-    if not conn.ping():
+    try:
+        password = os.getenv('PASSWORD')
+        if not (password and password.strip()):
+            conn = redis.Redis(host=os.getenv('HOST', "localhost"),
+                            port=os.getenv('PORT', 6379),
+                            decode_responses=True)
+        else:
+            conn = redis.Redis(host=os.getenv('HOST', "localhost"),
+                            port=os.getenv('PORT', 6379),
+                            password=password,
+                            decode_responses=True)
+        conn.ping()
+    except Exception:
+        traceback.print_exc()
         raise Exception('Redis unavailable')
+
     price_stream_name = configs.get("PRICE_STREAM").data
     test_stocks = configs.get("TEST_STOCKS").data.split(',')
 
