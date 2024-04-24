@@ -4,6 +4,7 @@ from jproperties import Properties
 import time
 import pandas as pd
 import os
+import traceback
 
 configs = Properties()
 with open('config/app-config.properties', 'rb') as config_file:
@@ -11,7 +12,8 @@ with open('config/app-config.properties', 'rb') as config_file:
 Faker.seed(0)
 fake = Faker('en_IN')
 
-def generate_investor_account_data(conn):
+
+def generate_investor_account_data():
     investorIdPrefix = "INV1000"
     accountIdPrefix = "ACC1000"
     accountCount = int(configs.get("ACCOUNT_RECORD_COUNT").data)
@@ -50,7 +52,7 @@ def generate_investor_account_data(conn):
             generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
             print(f"Created RDBBANK portfolio data for investor {investorId} with accountNo {accountNo}.")
 
-            print("Data generated - "+str(accs+1) +" of "+str(accountCount))
+            print("Data generated - " + str(accs + 1) + " of " + str(accountCount))
     except Exception as inst:
         print(type(inst))
         print("Exception occurred while generating investor & account data")
@@ -84,14 +86,24 @@ def generate_trading_data(conn, file, ticker, accountNo):
 
 
 if __name__ == '__main__':
-    conn = redis.Redis(host=os.getenv('HOST', "localhost"),
-                       port=os.getenv('PORT', 6379),
-                       password=os.getenv('PASSWORD', "admin"))
-    if not conn.ping():
+    try:
+        password = os.getenv('PASSWORD')
+        if not (password and password.strip()):
+            conn = redis.Redis(host=os.getenv('HOST', "localhost"),
+                               port=os.getenv('PORT', 6379),
+                               decode_responses=True)
+        else:
+            conn = redis.Redis(host=os.getenv('HOST', "localhost"),
+                               port=os.getenv('PORT', 6379),
+                               password=password,
+                               decode_responses=True)
+        conn.ping()
+    except Exception:
+        traceback.print_exc()
         raise Exception('Redis unavailable')
     try:
         # Generate investor, account & trading data
-        generate_investor_account_data(conn)
+        generate_investor_account_data()
     except Exception as inst:
         print(type(inst))
         print(inst)
