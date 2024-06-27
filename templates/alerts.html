@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Stock trading demo</title>
+
+    <!-- Custom fonts for this template -->
+    <link href="{{ url_for('static', filename = 'vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static', filename = 'css/sb-admin-2.min.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- Custom styles for this page -->
+    <link href="{{ url_for('static', filename = 'vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
+
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+            <a class="sidebar-brand d-flex align-items-left justify-content-left" href="#">
+                <div class="sidebar-brand-text mx-3">Stock demo</div>
+            </a>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <li class="nav-item active">
+                <a class="nav-link" href="/">
+                    <i class="fas fa-fw fa-chart-line"></i>
+                    <span>Stock overview</span></a>
+            </li>
+
+            <li class="nav-item active">
+                <a class="nav-link" href="/portfolio-detail">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Portfolio & transactions</span></a>
+            </li>
+
+            <li class="nav-item active">
+                <a class="nav-link" href="/alerts">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Alerts</span></a>
+            </li>
+
+        </ul>
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <form class="form-inline">
+                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                    </form>
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Hello user</span>
+                                <img class="img-profile rounded-circle"
+                                    src="{{ url_for('static', filename = 'img/undraw_profile.svg') }}">
+                            </a>
+                        </li>
+                    </ul>
+
+                </nav>
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+
+                    <!-- Page Heading -->
+                    <h1 class="h3 mb-2 text-gray-800">Alerts & notifications</h1>
+
+                    <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Create system alert</h6>
+                            </div>
+
+                            <div class="card-body">
+
+                                <form action="{{ url_for('newAlert') }}" method="post" class="form-inline pb-2">
+                                    <div class="form-group mx-3">
+                                            <label class="mr-2">Stock</label>
+                                        <!--<input type="text" name="stock" class="form-control" placeholder="" >-->
+                                        <select class="form-select form-select-sm " aria-label=".form-select-sm example" name="stock">
+                                            <option class="dropdown-item" value="RDBBANK">RDBBANK</option>
+                                            <option class="dropdown-item" value="RDBMOTORS">RDBMOTORS</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group mx-3">
+                                            <label class="mr-2">Trigger type </label>
+                                        <select class="form-select form-select-sm " aria-label=".form-select-sm example" name="triggerType">
+                                            <option class="dropdown-item" value="GT_TRIGGER_PRICE">Stock price surpassing the trigger price</option>
+                                            <option class="dropdown-item" value="LT_TRIGGER_PRICE">Stock price falling below the trigger price</option>
+                                            <option class="dropdown-item" value="EQ_TRIGGER_PRICE">Stock price equal to the trigger price</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group mx-3">
+                                            <label class="mr-2">Trigger price (INR)</label><input type="number" name="triggerPrice" class="form-control" placeholder="">
+                                    </div>
+
+                                    <button type="submit"  class="btn btn-info">Create alert</button>
+                                </form>
+
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="alertDataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr class="info">
+                                            <th>Stock</th>
+                                            <th>Trigger type</th>
+                                            <th>Trigger price (INR)</th>
+                                            <th>Date & time</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+
+                         </div>
+                    </div>
+                    <!-- /.container-fluid -->
+
+                </div>
+                <!-- End of Main Content -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{{ url_for('static', filename = 'vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{{ url_for('static', filename = 'vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{{ url_for('static', filename = 'js/sb-admin-2.min.js') }}"></script>
+
+    <!-- Page level plugins -->
+
+    <script src="{{ url_for('static', filename = 'vendor/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'vendor/moment.min.js') }}"></script>
+
+    <script src="{{ url_for('static', filename = 'js/demo/alert.js') }}"></script>
+
+</body>
+
+</html>

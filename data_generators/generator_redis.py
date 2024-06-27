@@ -49,9 +49,6 @@ def generate_investor_account_data():
             generate_trading_data(conn, "files/rdbmotors.csv", "RDBMOTORS", accountNo)
             print(f"Created RDBMOTORS portfolio data for investor {investorId} with accountNo {accountNo}.")
 
-            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
-            print(f"Created RDBBANK portfolio data for investor {investorId} with accountNo {accountNo}.")
-
             print("Data generated - " + str(accs + 1) + " of " + str(accountCount))
     except Exception as inst:
         print(type(inst))

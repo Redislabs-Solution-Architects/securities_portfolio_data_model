@@ -21,7 +21,7 @@ def ingestionTask(stock, price_stream_name, priceCol):
                        "dateInUnix": dateInUnix,
                        "price": data[priceCol][i]})
             print(str(i+1)+" pricing record generated for "+stock)
-            time.sleep(0.5)
+            time.sleep(1)
         print("Trading recordset generated")
     except Exception as inst:
         print(type(inst))
@@ -32,16 +32,16 @@ def ingestionTask(stock, price_stream_name, priceCol):
 
 if __name__ == '__main__':
     try:
-        password = os.getenv('PASSWORD')
+        password = 'admin'#os.getenv('PASSWORD')
         if not (password and password.strip()):
             conn = redis.Redis(host=os.getenv('HOST', "localhost"),
-                            port=os.getenv('PORT', 6379),
-                            decode_responses=True)
+                               port=os.getenv('PORT', 6379),
+                               decode_responses=True)
         else:
             conn = redis.Redis(host=os.getenv('HOST', "localhost"),
-                            port=os.getenv('PORT', 6379),
-                            password=password,
-                            decode_responses=True)
+                               port=os.getenv('PORT', 6379),
+                               password=password,
+                               decode_responses=True)
         conn.ping()
     except Exception:
         traceback.print_exc()

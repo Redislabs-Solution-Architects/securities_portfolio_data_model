@@ -9,6 +9,7 @@ import os
 import copy
 import logging
 import traceback
+import uuid
 
 from redis.commands.search.field import NumericField, TextField, TagField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
@@ -25,7 +26,7 @@ with open('./config/app-config.properties', 'rb') as config_file:
     configs.load(config_file)
 
 try:
-    password = os.getenv('PASSWORD')
+    password = 'admin'#os.getenv('PASSWORD')
     if not (password and password.strip()):
         r = redis.Redis(host=os.getenv('HOST', "localhost"),
                         port=os.getenv('PORT', 6379),
@@ -39,7 +40,6 @@ try:
 except Exception:
     traceback.print_exc()
     raise Exception('Redis unavailable')
-
 app = Flask(__name__)
 sock = Sock(app)
 ts = r.ts()
@@ -57,6 +57,59 @@ def getstats():
 @app.route('/portfolio-detail')
 def portfolioDetail():
     return render_template('portfolio.html')
+
+
+@app.route('/alerts')
+def alerts():
+    return render_template('alerts.html')
+
+
+@app.route('/newAlert', methods=['POST'])
+def newAlert():
+    stock = request.form['stock']
+    triggerType = request.form['triggerType']
+    triggerPrice = request.form['triggerPrice']
+    alertId = uuid.uuid4()
+    alert = {
+        "alertId": str(alertId),
+        "stock": stock,
+        "triggerType": triggerType,
+        "triggerPrice": triggerPrice,
+        "dateTime": int(time.time()),
+        "active": True
+    }
+    print(f"Creating {triggerType} alert for {stock} with trigger price {triggerPrice} --> {json.dumps(alert)}.")
+    r.json().set(f'alert:rule:{stock}:{alertId}', "$", alert)
+    return redirect(url_for('alerts'))
+
+
+@app.route('/deleteRule', methods=['POST'])
+def deleteRule():
+    ruleId = request.form['ruleId']
+    print(f"Deleting rule having Id {ruleId}")
+    r.delete(ruleId)
+    return redirect(url_for('alerts'))
+
+
+@app.route('/system-alerts')
+def systemAlerts():
+    keys = []
+    cursor = 0
+    while True:
+        cursor, alertKey = r.scan(cursor, match="alert:rule:*", count=10)
+        keys.extend(alertKey)
+        if cursor == 0:
+            break
+
+    results = []
+    for k in keys:
+        doc = r.json().get(k)
+        doc.update({"key": k})
+        results.append(doc)
+
+    results = {'data': results}
+    json_data = json.dumps(results)
+    return json_data
 
 
 def tnxResultsTemp(request):
@@ -218,42 +271,93 @@ def intraDayTrend(sock, ticker):
         time.sleep(3)
 
 
+@sock.route('/notification')
+def notification(sock):
+    streamName = configs.get("NOTIFICATION_STREAM").data
+    notification_group = configs.get("NOTIFICATION_GROUP_NAME").data
+    count =1
+    while True:
+        data = json.dumps({"message": "hello there gdg gdfgfg d dfgdfg dfgdf gdfg dgfg", "count": 3})
+        sock.send(data)
+        time.sleep(5)
+        if (count == 4):
+            break
+        count=count+1
+        # try:
+        #     # Read messages from the price stream
+        #     notifications = r.xreadgroup(notification_group, "notification_consumer", {streamName: '>'}, block=5000,
+        #                                  count=10)
+        #     for message in notifications:
+        #         for message_id, fields in message[1]:
+        #             print(f"notification consumer:: Message ID: {message_id}")
+        #             for field, value in fields.items():
+        #                 print(f" Received from notification stream  {field}: {value}")
+        #             # Acknowledge the message
+        #             r.xack(streamName, notification_group, message_id)
+        #         count = 3
+        #         data = json.dumps({"message": message, "count": count})
+        #         sock.send(data)
+        #     time.sleep(3)
+        # except Exception as e:
+        #     print(f"Error: {e}")
+        #     break
+
+
 def createIndexes():
-    # FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot:
-    # SCHEMA
-    #   $.accountNo as accountNo TEXT
-    #   $.ticker as ticker TAG
-    #   $.price as price NUMERIC SORTABLE
-    #   $.quantity as quantity NUMERIC SORTABLE
-    #   $.lotValue as lotValue NUMERIC SORTABLE
-    #   $.date as date NUMERIC SORTABLE
-    schema = (TextField("$.accountNo", as_name="accountNo"),
-              TagField("$.ticker", as_name="ticker"),
-              NumericField("$.price", as_name="price", sortable=True),
-              NumericField("$.quantity", as_name="quantity", sortable=True),
-              NumericField("$.lotValue", as_name="lotValue", sortable=True),
-              NumericField("$.date", as_name="date", sortable=True))
-    r.ft("idx_trading_security_lot").create_index(schema, definition=IndexDefinition(prefix=["trading:securitylot:"],
-                                                                                     index_type=IndexType.JSON))
-    # Creating index having definition::
-    # FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account:
-    # SCHEMA
-    #   $.accountNo as accountNo TEXT
-    #   $.address as address TEXT
-    #   $.retailInvestor as retailInvestor TAG
-    #   $.accountOpenDate as accountOpenDate TEXT
-    schema = (TextField("$.accountNo", as_name="accountNo"),
-              TextField("$.address", as_name="address"),
-              TagField("$.retailInvestor", as_name="retailInvestor"),
-              TextField("$.accountOpenDate", as_name="accountOpenDate"))
-    r.ft("idx_trading_account").create_index(schema, definition=IndexDefinition(prefix=["trading:account:"],
-                                                                                index_type=IndexType.JSON))
-    print("Created indexes: idx_trading_security_lot, idx_trading_account")
+    try:
+        # FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot:
+        # SCHEMA
+        #   $.accountNo as accountNo TEXT
+        #   $.ticker as ticker TAG
+        #   $.price as price NUMERIC SORTABLE
+        #   $.quantity as quantity NUMERIC SORTABLE
+        #   $.lotValue as lotValue NUMERIC SORTABLE
+        #   $.date as date NUMERIC SORTABLE
+        schema = (TextField("$.accountNo", as_name="accountNo"),
+                  TagField("$.ticker", as_name="ticker"),
+                  NumericField("$.price", as_name="price", sortable=True),
+                  NumericField("$.quantity", as_name="quantity", sortable=True),
+                  NumericField("$.lotValue", as_name="lotValue", sortable=True),
+                  NumericField("$.date", as_name="date", sortable=True))
+        r.ft("idx_trading_security_lot").create_index(schema, definition=IndexDefinition(prefix=["trading:securitylot:"],
+                                                                                         index_type=IndexType.JSON))
+        # Creating index having definition::
+        # FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account:
+        # SCHEMA
+        #   $.accountNo as accountNo TEXT
+        #   $.address as address TEXT
+        #   $.retailInvestor as retailInvestor TAG
+        #   $.accountOpenDate as accountOpenDate TEXT
+        schema = (TextField("$.accountNo", as_name="accountNo"),
+                  TextField("$.address", as_name="address"),
+                  TagField("$.retailInvestor", as_name="retailInvestor"),
+                  TextField("$.accountOpenDate", as_name="accountOpenDate"))
+        r.ft("idx_trading_account").create_index(schema, definition=IndexDefinition(prefix=["trading:account:"],
+                                                                                    index_type=IndexType.JSON))
+        print("Created indexes: idx_trading_security_lot, idx_trading_account")
+    except Exception as inst:
+        logging.warning("Exception occurred while creating indexes")
+
+
+def createNotificationStream():
+    # Create the alert stream and the consumer group if they don't exist
+    streamName = configs.get("NOTIFICATION_STREAM").data
+    groupName = configs.get("NOTIFICATION_GROUP_NAME").data
+    logging.log(level=20, msg=f"Creating notification stream {streamName}")
+    try:
+        r.xgroup_create(streamName, groupName, id='0', mkstream=True)
+    except redis.exceptions.ResponseError as e:
+        # Ignore the error if the group already exists
+        logging.warning("Exception occurred while creating notification stream")
+        # traceback.print_exc()
+        if "BUSYGROUP Consumer Group name already exists" not in str(e):
+            raise
 
 
 if __name__ == '__main__':
-    try:
-        createIndexes()
-    except Exception as inst:
-        logging.warning("Exception occurred while creating indexes")
+   # try:
+    createIndexes()
+    createNotificationStream()
+    # except Exception as inst:
+    #     logging.warning("Exception occurred while creating indexes")
     app.run(host='0.0.0.0', debug=True, port=5555)

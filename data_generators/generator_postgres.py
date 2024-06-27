@@ -35,7 +35,6 @@ def generate_investor_account_data(conn):
             generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
             generate_trading_data(conn, "files/rdbfoods.csv", "RDBFOODS", accountNo)
             generate_trading_data(conn, "files/rdbmotors.csv", "RDBMOTORS", accountNo)
-            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
             print("Data generated - "+str(accs+1) +" of "+str(accountCount))
     except Exception as inst:
         print(type(inst))

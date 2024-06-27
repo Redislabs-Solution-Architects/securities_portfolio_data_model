@@ -81,7 +81,12 @@ class RedisConfiguration {
 		try {
 			template.opsForStream().createGroup(priceUpdateStream, priceUpdateStream);
 		} catch (DataAccessException e) {
-			logger.info("Ignoring the exception. Redis Stream group may be present already. Skipping it");
+			logger.info("Ignoring the exception. Stream group 'priceUpdateStream' may be present already. Skipping it");
+		}
+		try {
+			template.opsForStream().createGroup(priceUpdateStream, "stock_price_alert_group");
+		} catch (DataAccessException e) {
+			logger.info("Ignoring the exception. Stream group 'stock_price_alert_group' may be present already. Skipping it");
 		}
 
 		return template;
