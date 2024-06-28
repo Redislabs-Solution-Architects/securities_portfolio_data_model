@@ -271,14 +271,17 @@ def notification(sock):
         try:
             # Read messages from the notification stream
             notifications = r.xreadgroup(notification_group, "notification_consumer", {streamName: '>'}, block=5000,
-                                         count=10)
+                                         count=5)
+            temp = []
             for message in notifications:
                 for message_id, fields in message[1]:
                     print(f"notification consumer:: Message ID: {message_id}")
                     message = fields.get('message')
-                    data = json.dumps({"message": message, "count": 1})
-                    sock.send(data)
+                    temp.append(message)
                     r.xack(streamName, notification_group, message_id)
+            data = json.dumps({"messages": temp, "count": len(temp)})
+            sock.send(data)
+            time.sleep(5)
         except Exception as e:
             print(f"Error: {e}")
             break
