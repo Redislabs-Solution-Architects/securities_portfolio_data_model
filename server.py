@@ -5,11 +5,14 @@ import json
 from datetime import datetime
 from flask import Flask, redirect, url_for, request, render_template
 from jproperties import Properties
-import os
 import copy
 import logging
-import traceback
+import sys
+import os
+
 import uuid
+sys.path.append(os.path.abspath('redis_connection'))
+from connection import RedisConnection
 
 from redis.commands.search.field import NumericField, TextField, TagField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
@@ -22,24 +25,13 @@ global app
 
 
 configs = Properties()
-with open('./config/app-config.properties', 'rb') as config_file:
+logger = logging.getLogger(__name__)
+logging.basicConfig(encoding='utf-8', level=logging.INFO)
+
+with open('config/app-config.properties', 'rb') as config_file:
     configs.load(config_file)
 
-try:
-    password = 'admin'#os.getenv('PASSWORD')
-    if not (password and password.strip()):
-        r = redis.Redis(host=os.getenv('HOST', "localhost"),
-                        port=os.getenv('PORT', 6379),
-                        decode_responses=True)
-    else:
-        r = redis.Redis(host=os.getenv('HOST', "localhost"),
-                        port=os.getenv('PORT', 6379),
-                        password=password,
-                        decode_responses=True)
-    r.ping()
-except Exception:
-    traceback.print_exc()
-    raise Exception('Redis unavailable')
+r = RedisConnection().get_connection()
 app = Flask(__name__)
 sock = Sock(app)
 ts = r.ts()
@@ -69,9 +61,7 @@ def newAlert():
     stock = request.form['stock']
     triggerType = request.form['triggerType']
     triggerPrice = request.form['triggerPrice']
-    alertId = uuid.uuid4()
     alert = {
-        "alertId": str(alertId),
         "stock": stock,
         "triggerType": triggerType,
         "triggerPrice": triggerPrice,
@@ -79,7 +69,8 @@ def newAlert():
         "active": True
     }
     print(f"Creating {triggerType} alert for {stock} with trigger price {triggerPrice} --> {json.dumps(alert)}.")
-    r.json().set(f'alert:rule:{stock}:{alertId}', "$", alert)
+    r.json().set(f'alert:rule:{stock}', "$", alert)
+    # r.set("stocks_with_rules", stock)
     return redirect(url_for('alerts'))
 
 
@@ -88,6 +79,7 @@ def deleteRule():
     ruleId = request.form['ruleId']
     print(f"Deleting rule having Id {ruleId}")
     r.delete(ruleId)
+    # r.srem("stocks_with_rules", ruleId.split(":")[2])
     return redirect(url_for('alerts'))
 
 
@@ -275,32 +267,21 @@ def intraDayTrend(sock, ticker):
 def notification(sock):
     streamName = configs.get("NOTIFICATION_STREAM").data
     notification_group = configs.get("NOTIFICATION_GROUP_NAME").data
-    count =1
     while True:
-        data = json.dumps({"message": "hello there gdg gdfgfg d dfgdfg dfgdf gdfg dgfg", "count": 3})
-        sock.send(data)
-        time.sleep(5)
-        if (count == 4):
+        try:
+            # Read messages from the notification stream
+            notifications = r.xreadgroup(notification_group, "notification_consumer", {streamName: '>'}, block=5000,
+                                         count=10)
+            for message in notifications:
+                for message_id, fields in message[1]:
+                    print(f"notification consumer:: Message ID: {message_id}")
+                    message = fields.get('message')
+                    data = json.dumps({"message": message, "count": 1})
+                    sock.send(data)
+                    r.xack(streamName, notification_group, message_id)
+        except Exception as e:
+            print(f"Error: {e}")
             break
-        count=count+1
-        # try:
-        #     # Read messages from the price stream
-        #     notifications = r.xreadgroup(notification_group, "notification_consumer", {streamName: '>'}, block=5000,
-        #                                  count=10)
-        #     for message in notifications:
-        #         for message_id, fields in message[1]:
-        #             print(f"notification consumer:: Message ID: {message_id}")
-        #             for field, value in fields.items():
-        #                 print(f" Received from notification stream  {field}: {value}")
-        #             # Acknowledge the message
-        #             r.xack(streamName, notification_group, message_id)
-        #         count = 3
-        #         data = json.dumps({"message": message, "count": count})
-        #         sock.send(data)
-        #     time.sleep(3)
-        # except Exception as e:
-        #     print(f"Error: {e}")
-        #     break
 
 
 def createIndexes():
@@ -343,7 +324,7 @@ def createNotificationStream():
     # Create the alert stream and the consumer group if they don't exist
     streamName = configs.get("NOTIFICATION_STREAM").data
     groupName = configs.get("NOTIFICATION_GROUP_NAME").data
-    logging.log(level=20, msg=f"Creating notification stream {streamName}")
+    logging.info(f"Creating notification stream {streamName}")
     try:
         r.xgroup_create(streamName, groupName, id='0', mkstream=True)
     except redis.exceptions.ResponseError as e:

@@ -5,6 +5,11 @@ import time
 import pandas as pd
 import os
 import traceback
+import sys
+
+sys.path.append(os.path.abspath('redis_connection'))
+from connection import RedisConnection
+
 
 configs = Properties()
 with open('config/app-config.properties', 'rb') as config_file:
@@ -52,6 +57,7 @@ def generate_investor_account_data():
             print("Data generated - " + str(accs + 1) + " of " + str(accountCount))
     except Exception as inst:
         print(type(inst))
+        traceback.print_exc()
         print("Exception occurred while generating investor & account data")
 
 
@@ -83,21 +89,7 @@ def generate_trading_data(conn, file, ticker, accountNo):
 
 
 if __name__ == '__main__':
-    try:
-        password = os.getenv('PASSWORD')
-        if not (password and password.strip()):
-            conn = redis.Redis(host=os.getenv('HOST', "localhost"),
-                               port=os.getenv('PORT', 6379),
-                               decode_responses=True)
-        else:
-            conn = redis.Redis(host=os.getenv('HOST', "localhost"),
-                               port=os.getenv('PORT', 6379),
-                               password=password,
-                               decode_responses=True)
-        conn.ping()
-    except Exception:
-        traceback.print_exc()
-        raise Exception('Redis unavailable')
+    conn = RedisConnection().get_connection()
     try:
         # Generate investor, account & trading data
         generate_investor_account_data()

@@ -23,6 +23,12 @@
     <!-- Custom styles for this page -->
     <link href="{{ url_for('static', filename = 'vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css">
 
+    <style>
+        .template {
+            display: none;
+        }
+    </style>
+
 </head>
 
 <body id="page-top">
@@ -77,8 +83,28 @@
                     </form>
 
                     <!-- Topbar Navbar -->
-                    <ul class="navbar-nav ml-auto">
+                    <ul class="navbar-nav ml-auto ulid">
                         <div class="topbar-divider d-none d-sm-block"></div>
+
+
+                        <!-- Nav Item - Alerts -->
+                        <li class="nav-item dropdown no-arrow mx-1 target">
+
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-bell fa-fw"></i>
+                                <!-- Counter - Alerts -->
+                                <span class="badge badge-danger badge-counter" id="notifCountId"></span>
+                            </a>
+                            <!-- Dropdown - Alerts -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in target"
+                                aria-labelledby="alertsDropdown" >
+                                <h6 class="dropdown-header">
+                                    Notifications
+                                </h6>
+                            </div>
+                        </li>
+
 
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
@@ -251,6 +277,15 @@
 
     <script src="{{ url_for('static', filename = 'js/demo/portfolio.js') }}"></script>
     <script src="{{ url_for('static', filename = 'js/demo/alert.js') }}"></script>
+
+    <a class="dropdown-item d-flex align-items-center template" href="#" id="template">
+        <div class="mr-3">
+            <div class="icon-circle bg-warning">
+                <i class="fas fa-exclamation-triangle text-white"></i>
+            </div>
+        </div>
+        <div class="alertmessage"></div>
+    </a>
 
 </body>
 
