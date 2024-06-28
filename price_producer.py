@@ -4,7 +4,6 @@ from jproperties import Properties
 import threading
 import sys
 import os
-import logging
 
 sys.path.append(os.path.abspath('redis_connection'))
 from connection import RedisConnection

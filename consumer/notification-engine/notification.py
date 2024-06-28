@@ -67,29 +67,5 @@ def consumeFromPriceStream():
             break
 
 
-# def consumeFromNotificationStream():
-#     streamName = configs.get("NOTIFICATION_STREAM").data
-#     notification_group = configs.get("NOTIFICATION_GROUP_NAME").data
-#     while True:
-#         try:
-#             # Read messages from the price stream
-#             notifications = r.xreadgroup(notification_group, "notification_consumer", {streamName: '>'}, block=5000,
-#                                          count=10)
-#             for message in notifications:
-#                 for message_id, fields in message[1]:
-#                     print(f"notification consumer:: Message ID: {message_id}")
-#                     for field, value in fields.items():
-#                         print(f" Received from notification stream  {field}: {value}")
-#                     # Acknowledge the message
-#                     r.xack(streamName, notification_group, message_id)
-#         except Exception as e:
-#             print(f"Error: {e}")
-#             break
-
-
 if __name__ == '__main__':
     consumeFromPriceStream()
-    # t1 = threading.Thread(target=consumeFromPriceStream)
-    # t2 = threading.Thread(target=consumeFromNotificationStream)
-    # t1.start()
-    # t2.start()

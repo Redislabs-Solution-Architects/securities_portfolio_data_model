@@ -20,9 +20,7 @@ from redis.commands.search.query import NumericFilter, Query
 import redis.commands.search.aggregation as aggregations
 import redis.commands.search.reducers as reducers
 
-
 global app
-
 
 configs = Properties()
 logger = logging.getLogger(__name__)
@@ -339,9 +337,6 @@ def createNotificationStream():
 
 
 if __name__ == '__main__':
-   # try:
     createIndexes()
     createNotificationStream()
-    # except Exception as inst:
-    #     logging.warning("Exception occurred while creating indexes")
     app.run(host='0.0.0.0', debug=True, port=5555)
