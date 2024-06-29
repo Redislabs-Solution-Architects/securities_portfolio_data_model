@@ -38,6 +38,8 @@ class RedisConfiguration {
 
 	@Value("${price.update.stream}")
 	private String priceUpdateStream;
+	
+	private String priceUpdateGroup = "price_update_group";
 
 	@Value("${spring.redis.host:localhost}")
 	private String server;
@@ -79,9 +81,14 @@ class RedisConfiguration {
 		template.afterPropertiesSet();
 
 		try {
-			template.opsForStream().createGroup(priceUpdateStream, priceUpdateStream);
+			template.opsForStream().createGroup(priceUpdateStream, priceUpdateGroup);
 		} catch (DataAccessException e) {
-			logger.info("Ignoring the exception. Redis Stream group may be present already. Skipping it");
+			logger.info("Ignoring the exception. Stream group 'priceUpdateStream' may be present already. Skipping it");
+		}
+		try {
+			template.opsForStream().createGroup(priceUpdateStream, "stock_price_alert_group");
+		} catch (DataAccessException e) {
+			logger.info("Ignoring the exception. Stream group 'stock_price_alert_group' may be present already. Skipping it");
 		}
 
 		return template;
@@ -100,7 +107,7 @@ class RedisConfiguration {
 				.create(redisConnectionFactory, options);
 
 		Subscription subscription = listenerContainer.receiveAutoAck(
-				Consumer.from(priceUpdateStream, InetAddress.getLocalHost().getHostName()),
+				Consumer.from(priceUpdateGroup, InetAddress.getLocalHost().getHostName()),
 				StreamOffset.create(priceUpdateStream, ReadOffset.lastConsumed()), streamListener);
 		listenerContainer.start();
 		return subscription;

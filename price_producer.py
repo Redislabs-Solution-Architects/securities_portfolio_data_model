@@ -1,13 +1,15 @@
-import redis
 import time
 import pandas as pd
 from jproperties import Properties
 import threading
+import sys
 import os
-import traceback
+
+sys.path.append(os.path.abspath('redis_connection'))
+from connection import RedisConnection
 
 configs = Properties()
-with open('./config/app-config.properties', 'rb') as config_file:
+with open('config/app-config.properties', 'rb') as config_file:
     configs.load(config_file)
 
 def ingestionTask(stock, price_stream_name, priceCol):
@@ -21,7 +23,7 @@ def ingestionTask(stock, price_stream_name, priceCol):
                        "dateInUnix": dateInUnix,
                        "price": data[priceCol][i]})
             print(str(i+1)+" pricing record generated for "+stock)
-            time.sleep(0.5)
+            time.sleep(1)
         print("Trading recordset generated")
     except Exception as inst:
         print(type(inst))
@@ -31,22 +33,7 @@ def ingestionTask(stock, price_stream_name, priceCol):
 
 
 if __name__ == '__main__':
-    try:
-        password = os.getenv('PASSWORD')
-        if not (password and password.strip()):
-            conn = redis.Redis(host=os.getenv('HOST', "localhost"),
-                            port=os.getenv('PORT', 6379),
-                            decode_responses=True)
-        else:
-            conn = redis.Redis(host=os.getenv('HOST', "localhost"),
-                            port=os.getenv('PORT', 6379),
-                            password=password,
-                            decode_responses=True)
-        conn.ping()
-    except Exception:
-        traceback.print_exc()
-        raise Exception('Redis unavailable')
-
+    conn = RedisConnection().get_connection()
     price_stream_name = configs.get("PRICE_STREAM").data
     test_stocks = configs.get("TEST_STOCKS").data.split(',')
 

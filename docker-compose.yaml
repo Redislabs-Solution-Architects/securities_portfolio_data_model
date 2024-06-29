@@ -36,6 +36,17 @@ services:
       - redis
     restart: always
 
+  notification_engine:
+    image: "abhishekcoder/sample_trading_data_model:notification_engine"
+    env_file:
+      - docker-compose-redis-variables.env
+    depends_on:
+      - redis
+      - price_producer
+      - deaggregator
+      - server
+    restart: always
+
   redis:
     image: "redis/redis-stack:latest"
     env_file:

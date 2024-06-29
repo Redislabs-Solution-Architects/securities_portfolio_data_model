@@ -28,7 +28,6 @@
             display: none;
         }
     </style>
-
 </head>
 
 <body id="page-top">
@@ -104,7 +103,6 @@
                             </div>
                         </li>
 
-
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
@@ -123,128 +121,62 @@
                 <div class="container-fluid">
 
                     <!-- Page Heading -->
-                    <h1 class="h3 mb-2 text-gray-800">User transactions</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Alerts & notifications</h1>
 
                     <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Search user transactions</h6>
-                        </div>
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Create system alert</h6>
+                            </div>
 
-                        <div class="card-body">
-                            <form action="" class="form-inline pb-2">
-<!--                                <div class="form-group mx-3">-->
-<!--                                        <label class="mr-2">Investor#</label><input type="text" id="investorId" class="form-control" placeholder="" >-->
-<!--                                </div>-->
-                                <div class="form-group mx-3">
-                                        <label class="mr-2">A/C#</label><input type="text" id="accountId" class="form-control" placeholder="" >
-                                </div>
-                                <div class="form-group mx-3">
-                                        <label class="mr-2">Stock</label><input type="text" id="stockId" class="form-control" placeholder="" >
-                                </div>
-                                <button type="button" id="resultBtnId" class="btn btn-info">Get result</button>
+                            <div class="card-body">
 
-                            </form>
-<!--                            <div class="small mx-3 mb-4" id="metaDiv"></div>-->
+                                <form action="{{ url_for('newAlert') }}" method="post" class="form-inline pb-2">
+                                    <div class="form-group mx-3">
+                                            <label class="mr-2">Stock</label>
+                                        <!--<input type="text" name="stock" class="form-control" placeholder="" >-->
+                                        <select class="form-select form-select-sm " aria-label=".form-select-sm example" name="stock">
+                                            <option class="dropdown-item" value="RDBBANK">RDBBANK</option>
+                                            <option class="dropdown-item" value="RDBMOTORS">RDBMOTORS</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group mx-3">
+                                            <label class="mr-2">Trigger type </label>
+                                        <select class="form-select form-select-sm " aria-label=".form-select-sm example" name="triggerType">
+                                            <option class="dropdown-item" value="GT_TRIGGER_PRICE">Stock price surpassing the trigger price</option>
+                                            <option class="dropdown-item" value="LT_TRIGGER_PRICE">Stock price falling below the trigger price</option>
+                                            <option class="dropdown-item" value="EQ_TRIGGER_PRICE">Stock price equal to the trigger price</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group mx-3">
+                                            <label class="mr-2">Trigger price (INR)</label><input type="number" name="triggerPrice" class="form-control" required step=".01">
+                                    </div>
+
+                                    <button type="submit"  class="btn btn-info">Create alert</button>
+                                </form>
 
                             <div class="table-responsive">
-                                <table class="table table-striped" id="dataTable" width="100%" cellspacing="0">
+                                <table class="table table-striped" id="alertDataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr class="info">
-                                            <th>A/C #</th>
-<!--                                            <th>A/C holder name</th>-->
                                             <th>Stock</th>
-                                            <th>Date</th>
-                                            <th>Price (INR)</th>
-                                            <th>Quantity</th>
-                                            <th>Total value (INR)</th>
+                                            <th>Trigger type</th>
+                                            <th>Trigger price (INR)</th>
+                                            <th>Date & time</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
                                 </table>
                             </div>
 
-                        </div>
-
+                         </div>
                     </div>
-
-
-                    <div class="row" id="accDetailDiv">
-
-                        <div class="col-xl-3 col-md-3 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary mb-1">
-                                                Number of stocks held</div>
-                                            <div class="h5 mb-0 font-weight-bold small text-gray-800" id="totalSecurityCount"></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-3 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success mb-1">
-                                                Stocks as on  </div>
-                                            <div class="h5 mb-0 font-weight-bold small text-gray-800" id="totalSecurityCountByTime"></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-3 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success mb-1">
-                                                Average cost/unit </div>
-                                            <div class="h5 mb-0 font-weight-bold small text-gray-800" id="avgCostPriceByTime"></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-3 col-md-3 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Portfolio value </div>
-                                            <div class="h5 mb-0 font-weight-bold small text-gray-800" id="portfolioValue"></div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
+                    <!-- /.container-fluid -->
 
                 </div>
-                <!-- /.container-fluid -->
-
-            </div>
-            <!-- End of Main Content -->
+                <!-- End of Main Content -->
 
         </div>
         <!-- End of Content Wrapper -->
@@ -252,10 +184,7 @@
     </div>
     <!-- End of Page Wrapper -->
 
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
+    </div>
 
 
     <!-- Bootstrap core JavaScript-->
@@ -274,7 +203,6 @@
     <script src="{{ url_for('static', filename = 'vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
     <script src="{{ url_for('static', filename = 'vendor/moment.min.js') }}"></script>
 
-    <script src="{{ url_for('static', filename = 'js/demo/portfolio.js') }}"></script>
     <script src="{{ url_for('static', filename = 'js/demo/notification.js') }}"></script>
 
     <a class="dropdown-item d-flex align-items-center template" href="#" id="template">
@@ -287,5 +215,55 @@
     </a>
 
 </body>
+
+    <script language="JavaScript">
+
+        $(document).ready(function() {
+            url = '/system-alerts'
+            table = $('#alertDataTable').DataTable({
+                    retrieve: true,
+                    sort: true,
+                   // scrollY: 400,
+                    ajax: {
+                        'url': url
+                    },
+                  columns: [
+                    { data: 'stock' },
+                    {
+                        data: 'triggerType',
+                        render: function (data, type) {
+                            if (data === 'GT_TRIGGER_PRICE') {
+                                return '> than the trigger price';
+                            }
+                            if (data === 'LT_TRIGGER_PRICE') {
+                                return '< than the trigger price';
+                            }
+                            return '= to the trigger price';
+                        }
+                    },
+                    { data: 'triggerPrice' },
+                    {
+                        data: 'dateTime',
+                        render: function (data, type, row, meta) {
+                            return moment.unix(data).format('DD/MM/YYYY h:mm');
+                        }
+                    },
+                    {
+                        data: 'key',
+                        render: function (data, type, row, meta) {
+                            return '<form action="/deleteRule" method="post"><input type="hidden" value="'+data+'" name="ruleId"><button class="btn btn-danger btn-circle btn-sm" onclick="document.submit();"><i class="fas fa-trash"></i></button></form>';
+                        }
+                    }
+                  ]
+            });
+
+        });
+
+        $.extend( $.fn.dataTable.defaults, {
+            searching: false,
+            ordering:  true
+        });
+
+    </script>
 
 </html>
