@@ -98,6 +98,7 @@ def systemAlerts():
         results.append(doc)
 
     results = {'data': results}
+    print(results)
     json_data = json.dumps(results)
     return json_data
 
