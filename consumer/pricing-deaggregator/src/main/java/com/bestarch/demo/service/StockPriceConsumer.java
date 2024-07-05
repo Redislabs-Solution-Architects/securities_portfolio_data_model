@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +30,6 @@ import com.redis.lettucemod.timeseries.Sample;
 import io.lettuce.core.KeyValue;
 import io.lettuce.core.api.sync.RedisCommands;
 
-
 @Component
 public class StockPriceConsumer implements StreamListener<String, MapRecord<String, String, String>> {
 	
@@ -37,12 +38,14 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 	@Value("${price.update.stream}")
 	private String priceUpdateStream;
 	
-	@Value("${timeseries.bucket}")
-	private Integer BUCKETSIZE;
-	
 	@Value("${timeseries.prefix}")
 	private String PREFIX;
 	
+	@Value("${timeseries.stocks}")
+	private String stocks;
+	
+	@Value("${timeseries.bucket}")
+	private Integer BUCKETSIZE;
 	
 	RedisConnectionFactory redisConnectionFactory;
 	
@@ -64,22 +67,14 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 			logger.info(values.toString());
 			StockPriceStreamRecord rec = objectMapper.convertValue(values, StockPriceStreamRecord.class);
 			KEY = PREFIX + rec.getTicker();
-			Duration bucketSize = Duration.ofSeconds(BUCKETSIZE);
 			ts.tsAdd(KEY, Sample.of(rec.getDateInUnix(), rec.getPrice()), 
 					AddOptions.<String, String>builder()
 					.labels(KeyValue.just("type", "stock"))
 					.policy(DuplicatePolicy.LAST)
 					.build());
 			
-			
-			
-			ts.tsCreaterule(KEY, KEY + ":o", CreateRuleOptions.builder(Aggregator.FIRST).bucketDuration(bucketSize).build());
-			ts.tsCreaterule(KEY, KEY + ":c", CreateRuleOptions.builder(Aggregator.LAST).bucketDuration(bucketSize).build());
-			ts.tsCreaterule(KEY, KEY + ":h", CreateRuleOptions.builder(Aggregator.MAX).bucketDuration(bucketSize).build());
-			ts.tsCreaterule(KEY, KEY + ":l", CreateRuleOptions.builder(Aggregator.MIN).bucketDuration(bucketSize).build());
 			RedisCommands<String, String> commands = connection.sync();
 			commands.xack(priceUpdateStream, "priceUpdateGroup", message.getId().getValue());
-
 		} catch (Exception e) {
 			logger.error("An exception occurred while consuming the message. Ignoring the error", e);
 		} finally {
@@ -89,6 +84,54 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 				logger.error("Exception occurred while returning connection to pool", e2);
 			}
 		}
+	}
+	
+	@PostConstruct
+	public void init() {
+		try {
+			String key = null;
+			Duration bucketSize = Duration.ofSeconds(BUCKETSIZE);
+			StatefulRedisModulesConnection<String, String> connection = pool.borrowObject();
+			RedisTimeSeriesCommands<String, String> ts = connection.sync();
+			String[] val = stocks.split(",");
+			for (String s:val) {
+				key = PREFIX + s;
+				
+				try {
+					ts.tsCreate(key, CreateOptions.<String, String>builder()
+							.labels(Arrays.asList(KeyValue.just("type", "stock")))
+							.policy(DuplicatePolicy.LAST).build());
+				} catch (Exception e) {
+					logger.error("An error occurred while creating timeseries key {}", key);
+				}
+				
+				ts.tsCreate(key + ":o", CreateOptions.<String, String>builder()
+						.labels(Arrays.asList(KeyValue.just("type", "stock")))
+						.policy(DuplicatePolicy.LAST).build());
+				ts.tsCreaterule(key, key + ":o", CreateRuleOptions.builder(Aggregator.FIRST).bucketDuration(bucketSize).build());
+				
+				
+				ts.tsCreate(key + ":c", CreateOptions.<String, String>builder()
+						.labels(Arrays.asList(KeyValue.just("type", "stock")))
+						.policy(DuplicatePolicy.LAST).build());
+				ts.tsCreaterule(key, key + ":c", CreateRuleOptions.builder(Aggregator.LAST).bucketDuration(bucketSize).build());
+				
+				
+				ts.tsCreate(key + ":h", CreateOptions.<String, String>builder()
+						.labels(Arrays.asList(KeyValue.just("type", "stock")))
+						.policy(DuplicatePolicy.LAST).build());
+				ts.tsCreaterule(key, key + ":h", CreateRuleOptions.builder(Aggregator.MAX).bucketDuration(bucketSize).build());
+				
+				
+				ts.tsCreate(key + ":l", CreateOptions.<String, String>builder()
+						.labels(Arrays.asList(KeyValue.just("type", "stock")))
+						.policy(DuplicatePolicy.LAST).build());
+				ts.tsCreaterule(key, key + ":l", CreateRuleOptions.builder(Aggregator.MIN).bucketDuration(bucketSize).build());
+			}
+		} catch (Exception e) {
+			logger.error("An error occurred while creating timeseries key OR rule");
+		}
+		
 	}
 
 }
