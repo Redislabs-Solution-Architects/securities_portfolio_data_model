@@ -36,7 +36,6 @@ if __name__ == '__main__':
     conn = RedisConnection().get_connection()
     price_stream_name = configs.get("PRICE_STREAM").data
     test_stocks = configs.get("TEST_STOCKS").data.split(',')
-
     for test_stock in test_stocks:
         stock = test_stock.strip()
         priceCol = stock + "EQN"

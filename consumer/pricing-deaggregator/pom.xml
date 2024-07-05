@@ -14,7 +14,7 @@
 	<name>demo.streams.consumer</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>1.8</java.version>
+		<java.version>18</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -61,7 +61,7 @@
 	    <dependency>
 		    <groupId>com.redis</groupId>
 		    <artifactId>spring-lettucemod</artifactId>
-		    <version>3.0.5</version>
+		    <version>3.8.0</version>
 		</dependency>
 		
 		<!-- <dependency>
@@ -93,11 +93,11 @@
 		</plugins>
 	</build>
 	
-	<repositories>
+<!--	<repositories>
 	    <repository>
 	      <id>snapshots-repo</id>
 	      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
 	    </repository>
-	 </repositories>
+	 </repositories>-->
 
 </project>

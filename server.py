@@ -259,7 +259,7 @@ def intraDayTrend(sock, ticker):
         price = []
         timeTrend = []
         sock.send(data)
-        time.sleep(3)
+        time.sleep(2)
 
 
 @sock.route('/notification')

@@ -17,6 +17,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.connection.stream.Consumer;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.ReadOffset;
+import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.connection.stream.StreamOffset;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
@@ -106,7 +107,7 @@ class RedisConfiguration {
 		StreamMessageListenerContainer<String, MapRecord<String, String, String>> listenerContainer = StreamMessageListenerContainer
 				.create(redisConnectionFactory, options);
 
-		Subscription subscription = listenerContainer.receiveAutoAck(
+		Subscription subscription = listenerContainer.receive(
 				Consumer.from(priceUpdateGroup, InetAddress.getLocalHost().getHostName()),
 				StreamOffset.create(priceUpdateStream, ReadOffset.lastConsumed()), streamListener);
 		listenerContainer.start();

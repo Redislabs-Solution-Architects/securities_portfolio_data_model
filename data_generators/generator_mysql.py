@@ -32,9 +32,9 @@ def generate_investor_account_data(conn):
             accountCloseDate = ''
             retailInvestor = True
             cursor.execute('INSERT INTO account (id,investorId,accountNo,accountOpenDate,accountCloseDate,retailInvestor) values (%s,%s,%s,%s,%s,%s)' ,(accountNo,investorId,accountNo,accountOpenDate,accountCloseDate,retailInvestor))
-            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
-            generate_trading_data(conn, "files/rdbfoods.csv", "RDBFOODS", accountNo)
-            generate_trading_data(conn, "files/rdbmotors.csv", "RDBMOTORS", accountNo)
+            generate_trading_data(conn, "files/HDFCBANK.csv", "HDFCBANK", accountNo)
+            generate_trading_data(conn, "files/NESTLE.csv", "NESTLE", accountNo)
+            generate_trading_data(conn, "files/TATAMOTORS.csv", "TATAMOTORS", accountNo)
             print("Data generated - "+str(accs+1) +" of "+str(accountCount))
        conn.commit()
     except Exception as inst:
