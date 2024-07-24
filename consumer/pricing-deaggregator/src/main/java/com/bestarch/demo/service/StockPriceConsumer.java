@@ -49,6 +49,8 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 	
 	RedisConnectionFactory redisConnectionFactory;
 	
+	private String priceUpdateGroup = "price_update_group";
+	
 	@Autowired
 	private GenericObjectPool<StatefulRedisModulesConnection<String, String>> pool;
 
@@ -67,21 +69,21 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 			logger.info(values.toString());
 			StockPriceStreamRecord rec = objectMapper.convertValue(values, StockPriceStreamRecord.class);
 			KEY = PREFIX + rec.getTicker();
-			ts.tsAdd(KEY, Sample.of(rec.getDateInUnix(), rec.getPrice()), 
+			ts.tsAdd(KEY, Sample.of(rec.getDateInUnix()*1000, rec.getPrice()), 
 					AddOptions.<String, String>builder()
 					.labels(KeyValue.just("type", "stock"))
 					.policy(DuplicatePolicy.LAST)
 					.build());
 			
 			RedisCommands<String, String> commands = connection.sync();
-			commands.xack(priceUpdateStream, "priceUpdateGroup", message.getId().getValue());
+			commands.xack(priceUpdateStream, priceUpdateGroup, message.getId().getValue());
 		} catch (Exception e) {
 			logger.error("An exception occurred while consuming the message. Ignoring the error", e);
 		} finally {
 			try {
 				pool.returnObject(connection);
-			} catch (Exception e2) {
-				logger.error("Exception occurred while returning connection to pool", e2);
+			} catch (Exception exp) {
+				logger.error("Exception occurred while returning connection to pool", exp);
 			}
 		}
 	}
@@ -93,8 +95,8 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 			Duration bucketSize = Duration.ofSeconds(BUCKETSIZE);
 			StatefulRedisModulesConnection<String, String> connection = pool.borrowObject();
 			RedisTimeSeriesCommands<String, String> ts = connection.sync();
-			String[] val = stocks.split(",");
-			for (String s:val) {
+			String[] stockStr = stocks.split(",");
+			for (String s:stockStr) {
 				key = PREFIX + s;
 				
 				try {
