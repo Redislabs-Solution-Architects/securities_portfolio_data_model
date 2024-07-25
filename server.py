@@ -1,6 +1,7 @@
 import redis
 from flask_sock import Sock
 import time
+from datetime import datetime, timedelta
 import json
 from datetime import datetime
 from flask import Flask, redirect, url_for, request, render_template
@@ -252,7 +253,7 @@ def intraDayTrend(sock, ticker):
         priceTrend = ts.range(key=key, from_time=startTimeTs, to_time='+')
         for item in priceTrend:
             endTime = item[0]
-            timeTrend.append(datetime.fromtimestamp(item[0]).strftime(configs.get("DATE_FORMAT").data))
+            timeTrend.append(datetime.fromtimestamp(int(item[0]/1000)).strftime(configs.get("DATE_FORMAT").data))
             price.append(item[1])
         data = json.dumps({"price": price, "timeTrend": timeTrend})
         startTimeTs = endTime
@@ -260,6 +261,34 @@ def intraDayTrend(sock, ticker):
         timeTrend = []
         sock.send(data)
         time.sleep(2)
+
+
+@sock.route('/ohlc/<ticker>')
+def ohlc(sock, ticker):
+    print(f"Ticker selected:: {ticker}")
+    specific_datetime = datetime(2024, 7, 5, 9, 15, 0)
+
+    data = getTestData(specific_datetime)
+    print(ticker)
+    data2=[]
+    while True:
+        for item in data:
+            sock.send(json.dumps(item))
+            time.sleep(2)
+
+
+def getTestData(specific_datetime):
+    data = [
+        {"x": (specific_datetime + timedelta(seconds=10)).timestamp() * 1000, "o": 100, "h": 105, "l": 95, "c": 102},
+        {"x": (specific_datetime + timedelta(seconds=20)).timestamp() * 1000, "o": 102, "h": 110, "l": 101, "c": 108},
+        {"x": (specific_datetime + timedelta(seconds=30)).timestamp() * 1000, "o": 108, "h": 112, "l": 107, "c": 110},
+        {"x": (specific_datetime + timedelta(seconds=40)).timestamp() * 1000, "o": 110, "h": 115, "l": 108, "c": 112},
+        {"x": (specific_datetime + timedelta(seconds=50)).timestamp() * 1000, "o": 112, "h": 118, "l": 108, "c": 114},
+        {"x": (specific_datetime + timedelta(seconds=60)).timestamp() * 1000, "o": 114, "h": 115, "l": 102, "c": 106},
+        {"x": (specific_datetime + timedelta(seconds=70)).timestamp() * 1000, "o": 106, "h": 108, "l": 105, "c": 107},
+        {"x": (specific_datetime + timedelta(seconds=80)).timestamp() * 1000, "o": 107, "h": 119, "l": 108, "c": 112},
+    ]
+    return data
 
 
 @sock.route('/notification')
