@@ -1,4 +1,6 @@
 import redis
+from datetime import datetime
+
 
 ssl_ca_certs = 'config/redis_ca.pem'
 
@@ -18,6 +20,12 @@ if __name__ == '__main__':
     # r.set(data, "World!!!")
     # print(r.get(data))
 
-    s = 'NULL'
-    if (not (s and s.strip())):
-        print('true')
+    # date_str = "05/07/2024 09:15:00"
+    # 2024-07-04 09:15:00
+    # Define the format corresponding to the given date string
+    #date_format = "%d/%m/%Y %H:%M:%S"
+    date_format = "%Y-%m-%d %H:%M:%S"
+    date_str = '2024-07-04 09:15:00'
+    # Create a datetime object from the date string
+    date_obj = datetime.strptime(date_str, date_format)
+    print(date_obj.timestamp()*1000)

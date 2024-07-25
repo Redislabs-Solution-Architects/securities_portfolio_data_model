@@ -264,17 +264,34 @@ def intraDayTrend(sock, ticker):
 
 
 @sock.route('/ohlc/<ticker>')
-def ohlc(sock, ticker):
+def candleStickChart(sock, ticker):
     print(f"Ticker selected:: {ticker}")
-    specific_datetime = datetime(2024, 7, 5, 9, 15, 0)
+    key_prefix = "price_history_ts:" + ticker + ":"
+    date_format = configs.get("DATE_FORMAT").data
+    start_datetime_str = configs.get("START_TIME").data
+    start_timestamp_millis = datetime.strptime(start_datetime_str, date_format).timestamp()*1000
+    end_timestamp_millis = datetime.strptime("2024-07-04 15:15:00", date_format).timestamp()*1000
 
-    data = getTestData(specific_datetime)
-    print(ticker)
-    data2=[]
-    while True:
-        for item in data:
+    #specific_datetime = datetime(2024, 7, 5, 9, 15, 0)
+    #data = getTestData(specific_datetime)
+
+    while True and start_timestamp_millis < end_timestamp_millis:
+        datapoints_h = ts.range(key_prefix + "h", start_timestamp_millis, start_timestamp_millis+5)
+        datapoints_l = ts.range(key_prefix + "l", start_timestamp_millis, start_timestamp_millis+5)
+        datapoints_o = ts.range(key_prefix + "o", start_timestamp_millis, start_timestamp_millis+5)
+        datapoints_c = ts.range(key_prefix + "c", start_timestamp_millis, start_timestamp_millis+5)
+
+        if datapoints_h:
+            ts_h, val_h = datapoints_h[0]
+            ts_l, val_l = datapoints_l[0]
+            ts_o, val_o = datapoints_o[0]
+            ts_c, val_c = datapoints_c[0]
+
+            item = {"x": ts_h, "o": val_o, "h": val_h, "l": val_l, "c": val_c}
             sock.send(json.dumps(item))
             time.sleep(2)
+
+        start_timestamp_millis += 5
 
 
 def getTestData(specific_datetime):
