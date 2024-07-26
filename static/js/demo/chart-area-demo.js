@@ -16,7 +16,6 @@ function displayChart() {
     var updatePrice = true
     socket2.addEventListener('message', ev => {
         data = JSON.parse(ev.data)
-        console.log("***************************************")
         console.log(data)
 
         for (i in data.timeTrend) {

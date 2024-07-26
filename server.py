@@ -256,7 +256,7 @@ def intraDayTrend(sock, ticker):
     key = configs.get("PRICE_HISTORY_TS").data + ":" + ticker
     while True:
         # print("invoking TS.GET with " + str(startTimeTs))
-        priceTrend = ts.range(key=key, from_time=startTimeTs, to_time='+')
+        priceTrend = ts.range(key=key, from_time=startTimeTs, to_time='+', latest=True)
         for item in priceTrend:
             endTime = item[0]
             timeTrend.append(datetime.fromtimestamp(int(item[0] / 1000)).strftime(configs.get("DATE_FORMAT").data))
@@ -274,34 +274,43 @@ def candleStickChart(sock, ticker):
     print(f"Ticker selected:: {ticker}")
     key_prefix = "price_history_ts:" + ticker + ":"
     date_format = configs.get("DATE_FORMAT").data
-    start_datetime_str = configs.get("START_TIME").data
-    start_timestamp_millis = int(datetime.strptime(start_datetime_str, date_format).timestamp() * 1000)
-    end_timestamp_millis = int(datetime.strptime("2024-07-04 15:15:00", date_format).timestamp() * 1000)
+    trading_start_time = int(datetime.strptime(configs.get("START_TIME").data, date_format).timestamp() * 1000)
+    start_timestamp_millis = trading_start_time
 
-    # specific_datetime = datetime(2024, 7, 5, 9, 15, 0)
-    # data = getTestData(specific_datetime)
-
+    interval = 5000  # 5 sec
+    retry_attempt = 20
+    attempt = 0
     while True:
         try:
-            datapoints_h = ts.range(key_prefix + "h", start_timestamp_millis, start_timestamp_millis + 5000)
-            datapoints_l = ts.range(key_prefix + "l", start_timestamp_millis, start_timestamp_millis + 5000)
-            datapoints_o = ts.range(key_prefix + "o", start_timestamp_millis, start_timestamp_millis + 5000)
-            datapoints_c = ts.range(key_prefix + "c", start_timestamp_millis, start_timestamp_millis + 5000)
+            datapoints_h = ts.range(key_prefix + "h", start_timestamp_millis, start_timestamp_millis + interval, latest=True)
+            datapoints_l = ts.range(key_prefix + "l", start_timestamp_millis, start_timestamp_millis + interval, latest=True)
+            datapoints_o = ts.range(key_prefix + "o", start_timestamp_millis, start_timestamp_millis + interval, latest=True)
+            datapoints_c = ts.range(key_prefix + "c", start_timestamp_millis, start_timestamp_millis + interval, latest=True)
 
             if datapoints_h:
+                attempt = 0
                 ts_h, val_h = datapoints_h[0]
                 ts_l, val_l = datapoints_l[0]
                 ts_o, val_o = datapoints_o[0]
                 ts_c, val_c = datapoints_c[0]
-
                 item = {"x": ts_h, "o": val_o, "h": val_h, "l": val_l, "c": val_c}
-                print(item)
                 sock.send(json.dumps(item))
-                time.sleep(0.5)
-                start_timestamp_millis += 5000
+                #print("Sent: " + str(item))
+            else:
+                attempt += 1
+                #print(f"No data found for {start_timestamp_millis}")
+
+            start_timestamp_millis += 5000
+            if attempt >= retry_attempt:
+                start_timestamp_millis = trading_start_time
+                startTime = datetime.fromtimestamp(start_timestamp_millis/1000).strftime("%Y-%m-%d %H:%M:%S")
+                print(f"Retried for {attempt} times. Restarting the retrieval process from {startTime}")
+                attempt = 0
+
+            time.sleep(0.5)
         except Exception as exp:
-            #sock.
-            print(type(exp))
+            pass
+            #print(type(exp))
 
 
 def getTestData(specific_datetime):

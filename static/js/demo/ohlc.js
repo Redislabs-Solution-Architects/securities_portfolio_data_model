@@ -1,8 +1,8 @@
 var initialDateStr = '05 Jul 2024 09:14 +0530';
 
 var ctx = document.getElementById('ohlcCanvas').getContext('2d');
-ctx.canvas.width = 900;
-ctx.canvas.height = 500;
+//ctx.canvas.width = 900;
+//ctx.canvas.height = 500;
 
 $("#triggerOhlc").click(function(){
     stockVal = getSelectedStock();
@@ -18,6 +18,31 @@ $("#triggerOhlc").click(function(){
                 label: stockVal,
                 data: []
             }]
+        },
+         options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'time',
+                    title: {
+                        display: true,
+                        text: 'Time'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Price'
+                    }
+                }
+            },
+//            plugins: {
+//                title: {
+//                    display: true,
+//                    text: 'Candlestick Chart Example'
+//                }
+//            }
         }
     });
 
@@ -28,7 +53,7 @@ $("#triggerOhlc").click(function(){
     };
     socket.addEventListener('message', ev => {
         data = JSON.parse(ev.data)
-        console.log(data)
+        //console.log(data)
         chart.data.datasets.forEach((dataset) => {
             dataset.data.push(data);
         });
