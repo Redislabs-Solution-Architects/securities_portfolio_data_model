@@ -12,6 +12,7 @@ import sys
 import os
 
 import uuid
+
 sys.path.append(os.path.abspath('redis_connection'))
 from connection import RedisConnection
 
@@ -40,10 +41,12 @@ ts = r.ts()
 def overview():
     return render_template('overview.html')
 
-@app.route('/stock-stats',methods = ['POST'])
+
+@app.route('/stock-stats', methods=['POST'])
 def getstats():
     stock = request.form['stockSelector']
     return render_template('overview.html', stock=stock)
+
 
 @app.route('/portfolio-detail')
 def portfolioDetail():
@@ -129,24 +132,24 @@ def tnxResults(request):
     #########################################
     account = request.args.get("account")
     stock = request.args.get("stock")
-    #investor = request.args.get("investor")
+    # investor = request.args.get("investor")
     qry = ''
     if account:
         qry = f"@accountNo: ({account}*)"
     if stock:
-        qry = qry + " @ticker: {"+stock+"*}"
+        qry = qry + " @ticker: {" + stock + "*}"
 
-    print("Generated query string: "+qry)
+    print("Generated query string: " + qry)
     query = (Query(qry).paging(0, 100))
     time1 = time.time()
     docs = r.ft("idx_trading_security_lot").search(query).docs
     time2 = time.time()
-    print(f"List of transactions retrieved in {(time2-time1):.3f} seconds")
+    print(f"List of transactions retrieved in {(time2 - time1):.3f} seconds")
 
     result = []
     for doc in docs:
         result.append(json.loads(doc.json))
-    #print(result)
+    # print(result)
     result = {'data': result}
     return result
 
@@ -154,6 +157,7 @@ def tnxResults(request):
 @app.route('/transactions')
 def transactions():
     return tnxResults(request)
+
 
 @app.route('/accountstats')
 def accountstats():
@@ -169,7 +173,7 @@ def accountstats():
 
     totalSecurityCount = []
     for rec in res:
-        totalSecurityCount.append(rec[1] + " [" + format(int(rec[3]), ',')+"]</br>")
+        totalSecurityCount.append(rec[1] + " [" + format(int(rec[3]), ',') + "]</br>")
     result['totalSecurityCount'] = totalSecurityCount
 
     ## Get the count of securities upto a given time for a provided account number
@@ -180,7 +184,7 @@ def accountstats():
     res = r.ft("idx_trading_security_lot").aggregate(req).rows
     totalSecurityCountByTime = []
     for rec in res:
-        totalSecurityCountByTime.append(rec[1] + " [" + format(int(rec[3]), ',')+"]</br>")
+        totalSecurityCountByTime.append(rec[1] + " [" + format(int(rec[3]), ',') + "]</br>")
     result['totalSecurityCountByTime'] = totalSecurityCountByTime
 
     ## Get the average cost of each stocks for a given account number and time-frame
@@ -188,13 +192,14 @@ def accountstats():
     ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker
     ##       reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice
     req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1665498506]")
-           .group_by('@ticker', reducers.sum('@lotValue').alias('totalLotValue'), reducers.sum('@quantity').alias('totalQuantity'))
+           .group_by('@ticker', reducers.sum('@lotValue').alias('totalLotValue'),
+                     reducers.sum('@quantity').alias('totalQuantity'))
            .apply(avgPrice="@totalLotValue/(@totalQuantity*100)"))
 
     res = r.ft("idx_trading_security_lot").aggregate(req).rows
     avgCostPriceByTime = []
     for rec in res:
-        avgCostPriceByTime.append(rec[1] + " [INR " + format(float(rec[7]), ',.2f')+"]</br>")
+        avgCostPriceByTime.append(rec[1] + " [INR " + format(float(rec[7]), ',.2f') + "]</br>")
     result['avgCostPriceByTime'] = avgCostPriceByTime
 
     ## get the total portfolio value for a given account number
@@ -214,6 +219,7 @@ def accountstats():
 
     data = json.dumps(result)
     return data
+
 
 @sock.route('/price/<ticker>')
 def price(sock, ticker):
@@ -243,17 +249,17 @@ def intraDayTrend(sock, ticker):
     print(ticker)
     price = []
     timeTrend = []
-    #startTime = str(datetime.now().date()) + " 09:00:00"
+    # startTime = str(datetime.now().date()) + " 09:00:00"
     startTime = configs.get("START_TIME").data
     startTimeTs = int(time.mktime(time.strptime(startTime, configs.get("DATE_FORMAT").data)))
     endTime = 0
     key = configs.get("PRICE_HISTORY_TS").data + ":" + ticker
     while True:
-        print("invoking TS.GET with " + str(startTimeTs))
+        # print("invoking TS.GET with " + str(startTimeTs))
         priceTrend = ts.range(key=key, from_time=startTimeTs, to_time='+')
         for item in priceTrend:
             endTime = item[0]
-            timeTrend.append(datetime.fromtimestamp(int(item[0]/1000)).strftime(configs.get("DATE_FORMAT").data))
+            timeTrend.append(datetime.fromtimestamp(int(item[0] / 1000)).strftime(configs.get("DATE_FORMAT").data))
             price.append(item[1])
         data = json.dumps({"price": price, "timeTrend": timeTrend})
         startTimeTs = endTime
@@ -269,29 +275,33 @@ def candleStickChart(sock, ticker):
     key_prefix = "price_history_ts:" + ticker + ":"
     date_format = configs.get("DATE_FORMAT").data
     start_datetime_str = configs.get("START_TIME").data
-    start_timestamp_millis = datetime.strptime(start_datetime_str, date_format).timestamp()*1000
-    end_timestamp_millis = datetime.strptime("2024-07-04 15:15:00", date_format).timestamp()*1000
+    start_timestamp_millis = int(datetime.strptime(start_datetime_str, date_format).timestamp() * 1000)
+    end_timestamp_millis = int(datetime.strptime("2024-07-04 15:15:00", date_format).timestamp() * 1000)
 
-    #specific_datetime = datetime(2024, 7, 5, 9, 15, 0)
-    #data = getTestData(specific_datetime)
+    # specific_datetime = datetime(2024, 7, 5, 9, 15, 0)
+    # data = getTestData(specific_datetime)
 
-    while True and start_timestamp_millis < end_timestamp_millis:
-        datapoints_h = ts.range(key_prefix + "h", start_timestamp_millis, start_timestamp_millis+5)
-        datapoints_l = ts.range(key_prefix + "l", start_timestamp_millis, start_timestamp_millis+5)
-        datapoints_o = ts.range(key_prefix + "o", start_timestamp_millis, start_timestamp_millis+5)
-        datapoints_c = ts.range(key_prefix + "c", start_timestamp_millis, start_timestamp_millis+5)
+    while True:
+        try:
+            datapoints_h = ts.range(key_prefix + "h", start_timestamp_millis, start_timestamp_millis + 5000)
+            datapoints_l = ts.range(key_prefix + "l", start_timestamp_millis, start_timestamp_millis + 5000)
+            datapoints_o = ts.range(key_prefix + "o", start_timestamp_millis, start_timestamp_millis + 5000)
+            datapoints_c = ts.range(key_prefix + "c", start_timestamp_millis, start_timestamp_millis + 5000)
 
-        if datapoints_h:
-            ts_h, val_h = datapoints_h[0]
-            ts_l, val_l = datapoints_l[0]
-            ts_o, val_o = datapoints_o[0]
-            ts_c, val_c = datapoints_c[0]
+            if datapoints_h:
+                ts_h, val_h = datapoints_h[0]
+                ts_l, val_l = datapoints_l[0]
+                ts_o, val_o = datapoints_o[0]
+                ts_c, val_c = datapoints_c[0]
 
-            item = {"x": ts_h, "o": val_o, "h": val_h, "l": val_l, "c": val_c}
-            sock.send(json.dumps(item))
-            time.sleep(2)
-
-        start_timestamp_millis += 5
+                item = {"x": ts_h, "o": val_o, "h": val_h, "l": val_l, "c": val_c}
+                print(item)
+                sock.send(json.dumps(item))
+                time.sleep(0.5)
+                start_timestamp_millis += 5000
+        except Exception as exp:
+            #sock.
+            print(type(exp))
 
 
 def getTestData(specific_datetime):
@@ -348,8 +358,9 @@ def createIndexes():
                   NumericField("$.quantity", as_name="quantity", sortable=True),
                   NumericField("$.lotValue", as_name="lotValue", sortable=True),
                   NumericField("$.date", as_name="date", sortable=True))
-        r.ft("idx_trading_security_lot").create_index(schema, definition=IndexDefinition(prefix=["trading:securitylot:"],
-                                                                                         index_type=IndexType.JSON))
+        r.ft("idx_trading_security_lot").create_index(schema,
+                                                      definition=IndexDefinition(prefix=["trading:securitylot:"],
+                                                                                 index_type=IndexType.JSON))
         # Creating index having definition::
         # FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account:
         # SCHEMA

@@ -1,4 +1,3 @@
-var barCount = 60;
 var initialDateStr = '05 Jul 2024 09:14 +0530';
 
 var ctx = document.getElementById('ohlcCanvas').getContext('2d');
@@ -10,19 +9,23 @@ $("#triggerOhlc").click(function(){
     $('#ohlcContainer').modal()
     var date = luxon.DateTime.fromRFC2822(initialDateStr);
     date2 = date.plus({ seconds: 10 });
-    initial = [{x: date.valueOf(), o: 100, h: 101, l: 99, c: 100},
-            {x: date2.valueOf(), o: 100, h: 106, l: 101, c: 105}]
+    initial = [{x: date.valueOf(), o: 100, h: 101, l: 99, c: 905},
+            {x: date2.valueOf(), o: 905, h: 106, l: 101, c: 905}]
     var chart = new Chart(ctx, {
         type: 'candlestick',
         data: {
             datasets: [{
                 label: stockVal,
-                data: initial
+                data: []
             }]
         }
     });
 
     var socket = new WebSocket('ws://' + location.host + '/ohlc/' + stockVal);
+    socket.onclose = function() {
+        console.log('WebSocket disconnected, attempting to reconnect');
+        socket = new WebSocket('ws://' + location.host + '/ohlc/' + stockVal);
+    };
     socket.addEventListener('message', ev => {
         data = JSON.parse(ev.data)
         console.log(data)
@@ -32,6 +35,7 @@ $("#triggerOhlc").click(function(){
         chart.update();
     });
 });
+
 
 function getSelectedStock() {
     if ($('#stockHid').val() == '') {
