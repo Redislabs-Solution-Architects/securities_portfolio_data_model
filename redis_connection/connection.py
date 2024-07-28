@@ -7,7 +7,7 @@ from redis.exceptions import RedisError
 class RedisConnection:
     def __init__(self):
         try:
-            password = 'admin' #os.getenv('PASSWORD')
+            password = os.getenv('PASSWORD')
             if not (password and password.strip()):
                 self.client = redis.Redis(
                     host=os.getenv('HOST', "localhost"),

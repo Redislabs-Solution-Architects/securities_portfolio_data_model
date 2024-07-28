@@ -4,8 +4,6 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +27,8 @@ import com.redis.lettucemod.timeseries.Sample;
 
 import io.lettuce.core.KeyValue;
 import io.lettuce.core.api.sync.RedisCommands;
+import jakarta.annotation.PostConstruct;
+
 
 @Component
 public class StockPriceConsumer implements StreamListener<String, MapRecord<String, String, String>> {
