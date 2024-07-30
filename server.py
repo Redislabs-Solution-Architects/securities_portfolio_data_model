@@ -3,7 +3,7 @@ from flask_sock import Sock
 import time
 from datetime import datetime, timedelta
 import json
-from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from flask import Flask, redirect, url_for, request, render_template
 from jproperties import Properties
 import copy
@@ -51,6 +51,11 @@ def getstats():
 @app.route('/portfolio-detail')
 def portfolioDetail():
     return render_template('portfolio.html')
+
+
+@app.route('/report')
+def report():
+    return render_template('report.html')
 
 
 @app.route('/alerts')
@@ -178,8 +183,9 @@ def accountstats():
 
     ## Get the count of securities upto a given time for a provided account number
     ## Query used:
-    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity
-    req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1665082800]")
+    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1721000000]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity
+    ## 1721000000 --> July 15th 2024
+    req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1721000000]")
            .group_by(['@ticker'], reducers.sum('@quantity').alias('totalQuantity')))
     res = r.ft("idx_trading_security_lot").aggregate(req).rows
     totalSecurityCountByTime = []
@@ -189,9 +195,9 @@ def accountstats():
 
     ## Get the average cost of each stocks for a given account number and time-frame
     ## Query used:
-    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker
+    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1721000000]' groupby 1 @ticker
     ##       reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice
-    req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1665498506]")
+    req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1721000000]")
            .group_by('@ticker', reducers.sum('@lotValue').alias('totalLotValue'),
                      reducers.sum('@quantity').alias('totalQuantity'))
            .apply(avgPrice="@totalLotValue/(@totalQuantity*100)"))
@@ -276,7 +282,7 @@ def candleStickChart(sock, ticker):
     date_format = configs.get("DATE_FORMAT").data
     trading_start_time = int(datetime.strptime(configs.get("START_TIME").data, date_format).timestamp() * 1000)
     start_timestamp_millis = trading_start_time
-
+    time.sleep(2)
     interval = 5000  # 5 sec
     retry_attempt = 20
     attempt = 0
@@ -311,6 +317,31 @@ def candleStickChart(sock, ticker):
         except Exception as exp:
             pass
             #print(type(exp))
+
+
+@sock.route('/report/<timeframe>/<ticker>')
+def reportChart(sock, timeframe, ticker):
+    timeframe = int(timeframe)
+    from_timestamp = datetime.now() - relativedelta(months=timeframe)
+    from_timestamp_millis = int(from_timestamp.timestamp() * 1000)
+    data = getHistoricStockPrices(ticker, from_timestamp_millis)
+    sock.send(json.dumps(data))
+
+
+def getHistoricStockPrices(ticker, from_timestamp_millis):
+    ts_range_o = ts.range("ts_historical_" + ticker + ":o", from_time=from_timestamp_millis, to_time='+')
+    ts_range_h = ts.range("ts_historical_" + ticker + ":h", from_time=from_timestamp_millis, to_time='+')
+    ts_range_l = ts.range("ts_historical_" + ticker + ":l", from_time=from_timestamp_millis, to_time='+')
+    ts_range_c = ts.range("ts_historical_" + ticker + ":c", from_time=from_timestamp_millis, to_time='+')
+    data = []
+    for i in range(len(ts_range_o)):
+        ts_o, val_o = ts_range_o[i]
+        ts_h, val_h = ts_range_h[i]
+        ts_l, val_l = ts_range_l[i]
+        ts_c, val_c = ts_range_c[i]
+        item = {"x": ts_o, "o": val_o, "h": val_h, "l": val_l, "c": val_c}
+        data.append(item)
+    return data
 
 
 def getTestData(specific_datetime):
