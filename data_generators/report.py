@@ -15,7 +15,8 @@ with open('config/app-config.properties', 'rb') as config_file:
 
 def ingestionTask(file, path):
     try:
-        data = pd.read_csv(path+file)
+        df = pd.read_csv(path+file)
+        data = df.dropna(subset=['Date', 'Open', 'Close', 'High', 'Low'])
         stock = file[:-4]
         for i, row in data.iterrows():
             dateInUnix = int(time.mktime(time.strptime(row['Date'], configs.get("DATE_FORMAT_REPORT").data)))
