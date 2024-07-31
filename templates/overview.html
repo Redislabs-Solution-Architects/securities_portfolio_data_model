@@ -61,6 +61,12 @@
                     <span>Alerts</span></a>
             </li>
 
+            <li class="nav-item active">
+                <a class="nav-link" href="/report">
+                    <i class="fas fa-fw fa-chart-line"></i>
+                    <span>Reports</span></a>
+            </li>
+
         </ul>
         <!-- End of Sidebar -->
 
@@ -80,8 +86,8 @@
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">Stock</span>
                                 <form id="stockForm" action="/stock-stats" method="post">
                                     <select class="form-select form-select-sm " aria-label=".form-select-sm example" id="stockSelector" name="stockSelector">
-                                        <option class="dropdown-item" value="RDBBANK">RDBBANK</option>
-                                        <option class="dropdown-item" value="RDBMOTORS">RDBMOTORS</option>
+                                        <option class="dropdown-item" value="HDFCBANK">HDFCBANK</option>
+                                        <option class="dropdown-item" value="TATAMOTORS">TATAMOTORS</option>
                                     </select>
                                     <input type="hidden" id="stockHid" value="{{stock}}">
                                 </form>
@@ -225,6 +231,11 @@
                                 <div
                                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                     <h6 class="m-0 font-weight-bold text-primary">Intra-day trend</h6>
+
+                                    <a href="#" id="triggerOhlc" class="btn btn-success btn-circle btn-sm" >
+                                        <i class="fas fa-check"></i>
+                                    </a>
+
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body">
@@ -252,19 +263,14 @@
     <script src="{{ url_for('static', filename = 'vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename = 'vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-    <!-- Core plugin JavaScript-->
     <script src="{{ url_for('static', filename = 'vendor/jquery-easing/jquery.easing.min.js') }}"></script>
 
-    <!-- Custom scripts for all pages-->
     <script src="{{ url_for('static', filename = 'js/sb-admin-2.min.js') }}"></script>
 
-    <!-- Page level plugins -->
-    <script src="{{ url_for('static', filename = 'vendor/chart.js/Chart.min.js') }}"></script>
-
-    <!-- Page level custom scripts -->
-    <script src="{{ url_for('static', filename = 'js/demo/chart-area-demo.js') }}"></script>
-
     <script src="{{ url_for('static', filename = 'js/demo/notification.js') }}"></script>
+
+
+<!--    <script src="{{ url_for('static', filename = 'js/demo/ohlc.js') }}"></script>-->
 
     <a class="dropdown-item d-flex align-items-center template" href="#" id="template">
         <div class="mr-3">
@@ -275,6 +281,49 @@
         <div class="alertmessage"></div>
     </a>
 
+
+    <div class="modal fade" id="ohlcContainer" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Price insight</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+
+              <div class="container-fluid">
+
+                <div class="row">
+                  <div class="col-md-12">
+                      <div class="chart-area">
+                        <canvas id="ohlcCanvas" width="900" height="500"></canvas>
+                      </div>
+                  </div>
+                </div>
+
+              </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
 </body>
+
+    <script src="https://cdn.jsdelivr.net/npm/luxon@1.26.0"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
+<!--    <script src="{{ url_for('static', filename = 'js/demo/chartjs-chart-financial.js') }}"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js"></script>
+
+    <script src="{{ url_for('static', filename = 'js/demo/chart-area-demo.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'js/demo/ohlc.js') }}"></script>
 
 </html>

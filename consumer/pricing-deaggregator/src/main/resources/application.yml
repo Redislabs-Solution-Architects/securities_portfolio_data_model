@@ -9,6 +9,11 @@ spring:
 price:
   update:
     stream: price_update_stream
+    
+timeseries:
+  prefix: "price_history_ts:"
+  bucket: 5
+  stocks: HDFCBANK,TATAMOTORS
 
 logging:
   level:

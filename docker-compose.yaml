@@ -47,6 +47,14 @@ services:
       - server
     restart: always
 
+  report:
+    image: "abhishekcoder/sample_trading_data_model:report"
+    env_file:
+      - docker-compose-redis-variables.env
+    depends_on:
+      - redis
+    restart: always
+
   redis:
     image: "redis/redis-stack:latest"
     env_file:

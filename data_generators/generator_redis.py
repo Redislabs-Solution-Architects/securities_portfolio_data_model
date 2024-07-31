@@ -44,14 +44,14 @@ def generate_investor_account_data():
             conn.json().set("trading:investor:" + investorId, "$", investor)
             conn.json().set("trading:account:" + accountNo, "$", account)
 
-            # Generating purchase transaction data for 3 stocks: RDBBANK, RDBFOODS and RDBMOTORS
-            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
+            # Generating purchase transaction data for 3 stocks: HDFCBANK, NESTLE and TATAMOTORS
+            generate_trading_data(conn, "files/HDFCBANK.csv", "HDFCBANK", accountNo)
             print(f"Created RDBBANK portfolio data for investor {investorId} with accountNo {accountNo}.")
 
-            generate_trading_data(conn, "files/rdbfoods.csv", "RDBFOODS", accountNo)
+            generate_trading_data(conn, "files/NESTLE.csv", "NESTLE", accountNo)
             print(f"Created RDBFOODS portfolio data for investor {investorId} with accountNo {accountNo}.")
 
-            generate_trading_data(conn, "files/rdbmotors.csv", "RDBMOTORS", accountNo)
+            generate_trading_data(conn, "files/TATAMOTORS.csv", "TATAMOTORS", accountNo)
             print(f"Created RDBMOTORS portfolio data for investor {investorId} with accountNo {accountNo}.")
 
             print("Data generated - " + str(accs + 1) + " of " + str(accountCount))

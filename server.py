@@ -1,8 +1,9 @@
 import redis
 from flask_sock import Sock
 import time
+from datetime import datetime, timedelta
 import json
-from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from flask import Flask, redirect, url_for, request, render_template
 from jproperties import Properties
 import copy
@@ -11,6 +12,7 @@ import sys
 import os
 
 import uuid
+
 sys.path.append(os.path.abspath('redis_connection'))
 from connection import RedisConnection
 
@@ -39,14 +41,21 @@ ts = r.ts()
 def overview():
     return render_template('overview.html')
 
-@app.route('/stock-stats',methods = ['POST'])
+
+@app.route('/stock-stats', methods=['POST'])
 def getstats():
     stock = request.form['stockSelector']
     return render_template('overview.html', stock=stock)
 
+
 @app.route('/portfolio-detail')
 def portfolioDetail():
     return render_template('portfolio.html')
+
+
+@app.route('/report')
+def report():
+    return render_template('report.html')
 
 
 @app.route('/alerts')
@@ -128,24 +137,24 @@ def tnxResults(request):
     #########################################
     account = request.args.get("account")
     stock = request.args.get("stock")
-    #investor = request.args.get("investor")
+    # investor = request.args.get("investor")
     qry = ''
     if account:
         qry = f"@accountNo: ({account}*)"
     if stock:
-        qry = qry + " @ticker: {"+stock+"*}"
+        qry = qry + " @ticker: {" + stock + "*}"
 
-    print("Generated query string: "+qry)
+    print("Generated query string: " + qry)
     query = (Query(qry).paging(0, 100))
     time1 = time.time()
     docs = r.ft("idx_trading_security_lot").search(query).docs
     time2 = time.time()
-    print(f"List of transactions retrieved in {(time2-time1):.3f} seconds")
+    print(f"List of transactions retrieved in {(time2 - time1):.3f} seconds")
 
     result = []
     for doc in docs:
         result.append(json.loads(doc.json))
-    #print(result)
+    # print(result)
     result = {'data': result}
     return result
 
@@ -153,6 +162,7 @@ def tnxResults(request):
 @app.route('/transactions')
 def transactions():
     return tnxResults(request)
+
 
 @app.route('/accountstats')
 def accountstats():
@@ -168,32 +178,34 @@ def accountstats():
 
     totalSecurityCount = []
     for rec in res:
-        totalSecurityCount.append(rec[1] + " [" + format(int(rec[3]), ',')+"]</br>")
+        totalSecurityCount.append(rec[1] + " [" + format(int(rec[3]), ',') + "]</br>")
     result['totalSecurityCount'] = totalSecurityCount
 
     ## Get the count of securities upto a given time for a provided account number
     ## Query used:
-    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity
-    req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1665082800]")
+    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1721000000]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity
+    ## 1721000000 --> July 15th 2024
+    req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1721000000]")
            .group_by(['@ticker'], reducers.sum('@quantity').alias('totalQuantity')))
     res = r.ft("idx_trading_security_lot").aggregate(req).rows
     totalSecurityCountByTime = []
     for rec in res:
-        totalSecurityCountByTime.append(rec[1] + " [" + format(int(rec[3]), ',')+"]</br>")
+        totalSecurityCountByTime.append(rec[1] + " [" + format(int(rec[3]), ',') + "]</br>")
     result['totalSecurityCountByTime'] = totalSecurityCountByTime
 
     ## Get the average cost of each stocks for a given account number and time-frame
     ## Query used:
-    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker
+    ##       FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1721000000]' groupby 1 @ticker
     ##       reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice
-    req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1665498506]")
-           .group_by('@ticker', reducers.sum('@lotValue').alias('totalLotValue'), reducers.sum('@quantity').alias('totalQuantity'))
+    req = (aggregations.AggregateRequest(f"@accountNo: ({account}) @date: [0 1721000000]")
+           .group_by('@ticker', reducers.sum('@lotValue').alias('totalLotValue'),
+                     reducers.sum('@quantity').alias('totalQuantity'))
            .apply(avgPrice="@totalLotValue/(@totalQuantity*100)"))
 
     res = r.ft("idx_trading_security_lot").aggregate(req).rows
     avgCostPriceByTime = []
     for rec in res:
-        avgCostPriceByTime.append(rec[1] + " [INR " + format(float(rec[7]), ',.2f')+"]</br>")
+        avgCostPriceByTime.append(rec[1] + " [INR " + format(float(rec[7]), ',.2f') + "]</br>")
     result['avgCostPriceByTime'] = avgCostPriceByTime
 
     ## get the total portfolio value for a given account number
@@ -213,6 +225,7 @@ def accountstats():
 
     data = json.dumps(result)
     return data
+
 
 @sock.route('/price/<ticker>')
 def price(sock, ticker):
@@ -242,24 +255,107 @@ def intraDayTrend(sock, ticker):
     print(ticker)
     price = []
     timeTrend = []
-    #startTime = str(datetime.now().date()) + " 09:00:00"
+    # startTime = str(datetime.now().date()) + " 09:00:00"
     startTime = configs.get("START_TIME").data
     startTimeTs = int(time.mktime(time.strptime(startTime, configs.get("DATE_FORMAT").data)))
     endTime = 0
     key = configs.get("PRICE_HISTORY_TS").data + ":" + ticker
     while True:
-        print("invoking TS.GET with " + str(startTimeTs))
-        priceTrend = ts.range(key=key, from_time=startTimeTs, to_time='+')
+        # print("invoking TS.GET with " + str(startTimeTs))
+        priceTrend = ts.range(key=key, from_time=startTimeTs, to_time='+', latest=True)
         for item in priceTrend:
             endTime = item[0]
-            timeTrend.append(datetime.fromtimestamp(item[0]).strftime(configs.get("DATE_FORMAT").data))
+            timeTrend.append(datetime.fromtimestamp(int(item[0] / 1000)).strftime(configs.get("DATE_FORMAT").data))
             price.append(item[1])
         data = json.dumps({"price": price, "timeTrend": timeTrend})
         startTimeTs = endTime
         price = []
         timeTrend = []
         sock.send(data)
-        time.sleep(3)
+        time.sleep(2)
+
+
+@sock.route('/ohlc/<ticker>')
+def candleStickChart(sock, ticker):
+    print(f"Ticker selected:: {ticker}")
+    key_prefix = "price_history_ts:" + ticker + ":"
+    date_format = configs.get("DATE_FORMAT").data
+    trading_start_time = int(datetime.strptime(configs.get("START_TIME").data, date_format).timestamp() * 1000)
+    start_timestamp_millis = trading_start_time
+    time.sleep(2)
+    interval = 5000  # 5 sec
+    retry_attempt = 20
+    attempt = 0
+    while True:
+        try:
+            datapoints_h = ts.range(key_prefix + "h", start_timestamp_millis, start_timestamp_millis + interval, latest=True)
+            datapoints_l = ts.range(key_prefix + "l", start_timestamp_millis, start_timestamp_millis + interval, latest=True)
+            datapoints_o = ts.range(key_prefix + "o", start_timestamp_millis, start_timestamp_millis + interval, latest=True)
+            datapoints_c = ts.range(key_prefix + "c", start_timestamp_millis, start_timestamp_millis + interval, latest=True)
+
+            if datapoints_h:
+                attempt = 0
+                ts_h, val_h = datapoints_h[0]
+                ts_l, val_l = datapoints_l[0]
+                ts_o, val_o = datapoints_o[0]
+                ts_c, val_c = datapoints_c[0]
+                item = {"x": ts_h, "o": val_o, "h": val_h, "l": val_l, "c": val_c}
+                sock.send(json.dumps(item))
+                #print("Sent: " + str(item))
+            else:
+                attempt += 1
+                #print(f"No data found for {start_timestamp_millis}")
+
+            start_timestamp_millis += 5000
+            if attempt >= retry_attempt:
+                start_timestamp_millis = trading_start_time
+                startTime = datetime.fromtimestamp(start_timestamp_millis/1000).strftime("%Y-%m-%d %H:%M:%S")
+                print(f"Retried for {attempt} times. Restarting the retrieval process from {startTime}")
+                attempt = 0
+
+            time.sleep(0.5)
+        except Exception as exp:
+            pass
+            #print(type(exp))
+
+
+@sock.route('/report/<timeframe>/<ticker>')
+def reportChart(sock, timeframe, ticker):
+    timeframe = int(timeframe)
+    from_timestamp = datetime.now() - relativedelta(months=timeframe)
+    from_timestamp_millis = int(from_timestamp.timestamp() * 1000)
+    data = getHistoricStockPrices(ticker, from_timestamp_millis)
+    sock.send(json.dumps(data))
+
+
+def getHistoricStockPrices(ticker, from_timestamp_millis):
+    ts_range_o = ts.range("ts_historical_" + ticker + ":o", from_time=from_timestamp_millis, to_time='+')
+    ts_range_h = ts.range("ts_historical_" + ticker + ":h", from_time=from_timestamp_millis, to_time='+')
+    ts_range_l = ts.range("ts_historical_" + ticker + ":l", from_time=from_timestamp_millis, to_time='+')
+    ts_range_c = ts.range("ts_historical_" + ticker + ":c", from_time=from_timestamp_millis, to_time='+')
+    data = []
+    for i in range(len(ts_range_o)):
+        ts_o, val_o = ts_range_o[i]
+        ts_h, val_h = ts_range_h[i]
+        ts_l, val_l = ts_range_l[i]
+        ts_c, val_c = ts_range_c[i]
+        item = {"x": ts_o, "o": val_o, "h": val_h, "l": val_l, "c": val_c}
+        data.append(item)
+    return data
+
+
+def getTestData(specific_datetime):
+    data = [
+        {"x": (specific_datetime + timedelta(seconds=10)).timestamp() * 1000, "o": 100, "h": 105, "l": 95, "c": 102},
+        {"x": (specific_datetime + timedelta(seconds=20)).timestamp() * 1000, "o": 102, "h": 110, "l": 101, "c": 108},
+        {"x": (specific_datetime + timedelta(seconds=30)).timestamp() * 1000, "o": 108, "h": 112, "l": 107, "c": 110},
+        {"x": (specific_datetime + timedelta(seconds=40)).timestamp() * 1000, "o": 110, "h": 115, "l": 108, "c": 112},
+        {"x": (specific_datetime + timedelta(seconds=50)).timestamp() * 1000, "o": 112, "h": 118, "l": 108, "c": 114},
+        {"x": (specific_datetime + timedelta(seconds=60)).timestamp() * 1000, "o": 114, "h": 115, "l": 102, "c": 106},
+        {"x": (specific_datetime + timedelta(seconds=70)).timestamp() * 1000, "o": 106, "h": 108, "l": 105, "c": 107},
+        {"x": (specific_datetime + timedelta(seconds=80)).timestamp() * 1000, "o": 107, "h": 119, "l": 108, "c": 112},
+    ]
+    return data
 
 
 @sock.route('/notification')
@@ -302,8 +398,9 @@ def createIndexes():
                   NumericField("$.quantity", as_name="quantity", sortable=True),
                   NumericField("$.lotValue", as_name="lotValue", sortable=True),
                   NumericField("$.date", as_name="date", sortable=True))
-        r.ft("idx_trading_security_lot").create_index(schema, definition=IndexDefinition(prefix=["trading:securitylot:"],
-                                                                                         index_type=IndexType.JSON))
+        r.ft("idx_trading_security_lot").create_index(schema,
+                                                      definition=IndexDefinition(prefix=["trading:securitylot:"],
+                                                                                 index_type=IndexType.JSON))
         # Creating index having definition::
         # FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account:
         # SCHEMA

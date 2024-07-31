@@ -32,9 +32,9 @@ def generate_investor_account_data(conn):
             accountCloseDate = ''
             retailInvestor = True
             pgaccount = curs.execute('INSERT INTO account (id,"investorId","accountNo","accountOpenDate","accountCloseDate","retailInvestor") values (%s,%s,%s,%s,%s,%s)' ,(accountNo,investorId,accountNo,accountOpenDate,accountCloseDate,retailInvestor))
-            generate_trading_data(conn, "files/rdbbank.csv", "RDBBANK", accountNo)
-            generate_trading_data(conn, "files/rdbfoods.csv", "RDBFOODS", accountNo)
-            generate_trading_data(conn, "files/rdbmotors.csv", "RDBMOTORS", accountNo)
+            generate_trading_data(conn, "files/HDFCBANK.csv", "HDFCBANK", accountNo)
+            generate_trading_data(conn, "files/NESTLE.csv", "NESTLE", accountNo)
+            generate_trading_data(conn, "files/TATAMOTORS.csv", "TATAMOTORS", accountNo)
             print("Data generated - "+str(accs+1) +" of "+str(accountCount))
     except Exception as inst:
         print(type(inst))
@@ -74,7 +74,7 @@ def generate_trading_data(conn, file, ticker, accountNo):
 
 if __name__ == '__main__':
     conn = psycopg2.connect(
-     database="<<DATABASE>>", user='<<USRE>>', password='<<PASSWORD>>', host='<<HOST>>', port= '<<PORT>>'
+     database="<<DATABASE>>", user='<<USER>>', password='<<PASSWORD>>', host='<<HOST>>', port='<<PORT>>'
     )
     conn.autocommit = True
     cursor = conn.cursor()
