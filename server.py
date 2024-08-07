@@ -60,7 +60,22 @@ def report():
 
 @app.route('/alerts')
 def alerts():
-    return render_template('alerts.html')
+    keys = []
+    cursor = 0
+    while True:
+        cursor, alertKey = r.scan(cursor, match="alert:rule:*", count=10)
+        keys.extend(alertKey)
+        if cursor == 0:
+            break
+
+    results = []
+    for k in keys:
+        doc = r.json().get(k)
+        doc.update({"key": k})
+        doc.update({"dateTime": datetime.fromtimestamp(doc['dateTime']).strftime('%Y-%m-%d %H:%M:%S')})
+        results.append(doc)
+
+    return render_template('alerts.html', rules=results)
 
 
 @app.route('/newAlert', methods=['POST'])
@@ -90,6 +105,8 @@ def deleteRule():
     return redirect(url_for('alerts'))
 
 
+# This function is deprecated
+# Not used anymore
 @app.route('/system-alerts')
 def systemAlerts():
     keys = []
