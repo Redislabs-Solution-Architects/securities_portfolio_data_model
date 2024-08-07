@@ -360,23 +360,52 @@ def getTestData(specific_datetime):
 
 @sock.route('/notification')
 def notification(sock):
-    streamName = configs.get("NOTIFICATION_STREAM").data
-    notification_group = configs.get("NOTIFICATION_GROUP_NAME").data
+    streamName = configs.get("PRICE_STREAM").data
     while True:
         try:
-            # Read messages from the notification stream
-            notifications = r.xreadgroup(notification_group, "notification_consumer", {streamName: '>'}, block=5000,
-                                         count=5)
             temp = []
-            for message in notifications:
+            # Read messages from the price stream
+            messages = r.xreadgroup("stock_price_alert_group", "alert_consumer", {streamName: '>'}, block=5000, count=5)
+
+            for message in messages:
                 for message_id, fields in message[1]:
-                    print(f"notification consumer:: Message ID: {message_id}")
-                    message = fields.get('message')
-                    temp.append(message)
-                    r.xack(streamName, notification_group, message_id)
-            data = json.dumps({"messages": temp, "count": len(temp)})
-            sock.send(data)
-            time.sleep(5)
+                    print(f"Alert consumer:: Message ID: {message_id}")
+                    stock = fields.get('ticker')
+                    price = fields.get('price')
+
+                    rule = r.json().get(f'alert:rule:{stock}')
+                    notification = ''
+                    if not (rule is None):
+                        triggerPrice = r.json().get(f'alert:rule:{stock}', "triggerPrice")
+                        triggerType = r.json().get(f'alert:rule:{stock}', "triggerType")
+
+                        if 'GT_TRIGGER_PRICE' == triggerType:
+                            if price > triggerPrice:
+                                notification = {
+                                    'message': f'Stock has surpassed the trigger price of {triggerPrice}. '
+                                               f'Stock price: {price}'}
+                                temp.append(notification)
+
+                        elif 'LT_TRIGGER_PRICE' == triggerType:
+                            if price < triggerPrice:
+                                notification = {
+                                    'message': f'Stock has fallen below the trigger price of {triggerPrice}. '
+                                               f'Stock price: {price}'}
+                                temp.append(notification)
+
+                        elif 'EQ_TRIGGER_PRICE' == triggerType:
+                            if price == triggerPrice:
+                                notification = {
+                                    'message': f'Stock has fallen below the trigger price of {triggerPrice}. '
+                                               f'Stock price: {price}'}
+                                temp.append(notification)
+
+                    r.xack(streamName, "stock_price_alert_group", message_id)
+
+            if len(temp) > 0:
+                data = json.dumps({"messages": temp, "count": len(temp)})
+                sock.send(data)
+
         except Exception as e:
             print(f"Error: {e}")
             break
@@ -419,22 +448,6 @@ def createIndexes():
         logging.warning("Exception occurred while creating indexes")
 
 
-def createNotificationStream():
-    # Create the alert stream and the consumer group if they don't exist
-    streamName = configs.get("NOTIFICATION_STREAM").data
-    groupName = configs.get("NOTIFICATION_GROUP_NAME").data
-    logging.info(f"Creating notification stream {streamName}")
-    try:
-        r.xgroup_create(streamName, groupName, id='0', mkstream=True)
-    except redis.exceptions.ResponseError as e:
-        # Ignore the error if the group already exists
-        logging.warning("Exception occurred while creating notification stream")
-        # traceback.print_exc()
-        if "BUSYGROUP Consumer Group name already exists" not in str(e):
-            raise
-
-
 if __name__ == '__main__':
     createIndexes()
-    createNotificationStream()
     app.run(host='0.0.0.0', debug=True, port=5555)

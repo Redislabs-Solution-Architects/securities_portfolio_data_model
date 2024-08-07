@@ -1,4 +1,4 @@
-var initialDateStr = '05 Jul 2024 09:14 +0530';
+var initialDateStr = '05 Jul 2024 09:14';
 
 var ctx = document.getElementById('ohlcCanvas').getContext('2d');
 //ctx.canvas.width = 900;

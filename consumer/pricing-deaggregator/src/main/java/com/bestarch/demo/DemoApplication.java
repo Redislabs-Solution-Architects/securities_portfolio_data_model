@@ -11,24 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class DemoApplication {
-	
-	/*
-	@Value("${price.update.stream}")
-	private String priceUpdateStream;
-	
-	@Value("${timeseries.prefix}")
-	private String PREFIX;
-	
-	@Value("${timeseries.stocks}")
-	private String stocks;
-	
-	@Value("${timeseries.bucket}")
-	private Integer BUCKETSIZE;
-	
-	@Autowired
-	private GenericObjectPool<StatefulRedisModulesConnection<String, String>> pool;
-	*/
-	
+		
 	private static Logger logger = LoggerFactory.getLogger(DemoApplication.class);
 
 	public static void main(String[] args) throws NoSuchAlgorithmException, UnsupportedEncodingException {
