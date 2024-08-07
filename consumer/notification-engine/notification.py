@@ -18,6 +18,8 @@ with open('config/app-config.properties', 'rb') as config_file:
 r = RedisConnection().get_connection()
 
 
+# DO NOT use this file.
+# This file is deprecated.
 def consumeFromPriceStream():
     logging.info(f"Starting notification rule engine.")
     streamName = configs.get("PRICE_STREAM").data
@@ -45,21 +47,21 @@ def consumeFromPriceStream():
                                 notification = {
                                     'message': f'Stock has surpassed the trigger price of {triggerPrice}. '
                                                f'Stock price: {price}'}
-                                r.xadd(configs.get("NOTIFICATION_STREAM").data, notification)
+                                r.xadd("price_notification_stream", notification)
 
                         elif 'LT_TRIGGER_PRICE' == triggerType:
                             if price < triggerPrice:
                                 notification = {
                                     'message': f'Stock has fallen below the trigger price of {triggerPrice}. '
                                                f'Stock price: {price}'}
-                                r.xadd(configs.get("NOTIFICATION_STREAM").data, notification)
+                                r.xadd("price_notification_stream", notification)
 
                         elif 'EQ_TRIGGER_PRICE' == triggerType:
                             if price == triggerPrice:
                                 notification = {
                                     'message': f'Stock has fallen below the trigger price of {triggerPrice}. '
                                                f'Stock price: {price}'}
-                                r.xadd(configs.get("NOTIFICATION_STREAM").data, notification)
+                                r.xadd("price_notification_stream", notification)
 
                     r.xack(streamName, groupName, message_id)
         except Exception as e:

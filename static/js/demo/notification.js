@@ -1,5 +1,4 @@
 $(document).ready(function() {
-
     notification()
 
     function notification() {
@@ -11,7 +10,7 @@ $(document).ready(function() {
             messages = data.messages
             messages.forEach(function(msg) {
                 var anchor = $('#template').clone().removeClass('template').show();
-                anchor.find('.alertmessage').text(msg);
+                anchor.find('.alertmessage').text(msg.message);
                 $('#ulid li.target div.target').append(anchor);
             });
         });
