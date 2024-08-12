@@ -39,27 +39,38 @@ ts = r.ts()
 
 @app.route('/')
 def overview():
-    return render_template('overview.html')
+    stocks = get_stock_list()
+    return render_template('overview.html', stocks=stocks, enabledFeatures=enabledFeatures)
+
+
+def get_stock_list():
+    test_stocks = configs.get("TEST_STOCKS").data.split(',')
+    stocks = []
+    for stock in test_stocks:
+        stocks.append(stock)
+    return stocks
 
 
 @app.route('/stock-stats', methods=['POST'])
 def getstats():
     stock = request.form['stockSelector']
-    return render_template('overview.html', stock=stock)
+    return render_template('overview.html', stock=stock, enabledFeatures=enabledFeatures)
 
 
 @app.route('/portfolio-detail')
 def portfolioDetail():
-    return render_template('portfolio.html')
+    return render_template('portfolio.html', enabledFeatures=enabledFeatures)
 
 
 @app.route('/report')
 def report():
-    return render_template('report.html')
+    stocks = get_stock_list()
+    return render_template('report.html', stocks=stocks, enabledFeatures=enabledFeatures)
 
 
 @app.route('/alerts')
 def alerts():
+    stocks = get_stock_list()
     keys = []
     cursor = 0
     while True:
@@ -75,7 +86,7 @@ def alerts():
         doc.update({"dateTime": datetime.fromtimestamp(doc['dateTime']).strftime('%Y-%m-%d %H:%M:%S')})
         results.append(doc)
 
-    return render_template('alerts.html', rules=results)
+    return render_template('alerts.html', rules=results, stocks=stocks, enabledFeatures=enabledFeatures)
 
 
 @app.route('/newAlert', methods=['POST'])
@@ -467,4 +478,10 @@ def createIndexes():
 
 if __name__ == '__main__':
     createIndexes()
-    app.run(host='0.0.0.0', debug=True, port=5555)
+    enabledFeatures = {
+        "ticker_trend": eval(str(os.getenv('ticker_trend', True)).capitalize()),
+        "report": eval(str(os.getenv('report', True)).capitalize()),
+        "notification": eval(str(os.getenv('notification', True)).capitalize()),
+        "transactions": eval(str(os.getenv('transactions', True)).capitalize())
+    }
+    app.run(host='0.0.0.0', debug=False, port=5555)
