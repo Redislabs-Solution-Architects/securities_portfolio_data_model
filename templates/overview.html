@@ -41,6 +41,15 @@
                     <ul class="navbar-nav ml-auto" id="ulid">
 
                         <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="https://user-images.githubusercontent.com/26322220/188598080-7bdf315f-09f5-4b5c-85c6-54a3b80865ee.png" role="button" target=”_blank”>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">See how it works</span>
+                                <i class="fas fa-magic"></i>
+                            </a>
+                        </li>
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <li class="nav-item dropdown no-arrow">
                             <div class="nav-link dropdown-toggle">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">Stock</span>
                                 <form id="stockForm" action="/stock-stats" method="post">
@@ -258,8 +267,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/luxon@1.26.0"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-adrapter-luxon@1.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chat-financial@0.2.1/dist/chartjs-chart-financial.min.js"></script>
 
     <script src="{{ url_for('static', filename = 'js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ url_for('static', filename = 'js/demo/ohlc.js') }}"></script>
