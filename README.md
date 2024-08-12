@@ -56,7 +56,7 @@ have multiple such lots at a given time the aggregation of which will provide th
     {
       "id": "SC61239693",
       "accountNo": "ACC10001", 
-      "ticker": "RDBBANK",  
+      "ticker": "ABCBANK",  
       "date": 1665082800, 
       "price": 14500.00, 
       "quantity": 10, 
@@ -80,7 +80,7 @@ have multiple such lots at a given time the aggregation of which will provide th
 ```json
     {
       "id": "NSE623846333",
-      "stockCode": "RDBBANK",
+      "stockCode": "ABCBANK",
       "isin": "INE211111034",
       "stockName": "RDB Bank",
       "description": "Something about RDB bank",
@@ -114,7 +114,7 @@ We will build queries for following requirement:
 #### Test the scenario
 * Firstly, you need to spin-up a new Redis Enterprise cluster or Redis Stack server.
 * Then, for testing above scenarios we need to create above data models like investors, account, security_lot objects. 
-  Here, we will ingest considerable amount of stock-purchase data for multiple accounts pertaining to 2 stocks: RDBMOTORS and RDBFOODS. 
+  Here, we will ingest considerable amount of stock-purchase data for multiple accounts pertaining to 2 stocks: ABCMOTORS and ABCFOOD. 
   For this, we will use `generator.py` file present in `data_generators` folder (used to ingest data into Redis) and execute following steps:
 
       source venv/bin/activate
@@ -135,7 +135,7 @@ We will build queries for following requirement:
   1. Get all the security lots by account number/id
        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)'`
   2. Get all the security lots by account number/id and ticker
-       * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBMOTORS}'` 
+       * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{ABCMOTORS}'` 
   3. Get total quantity of all securities inside investor's security portfolio
        * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
   4. Get total quantity of all securities inside investor's security portfolio at a particular time
@@ -151,16 +151,16 @@ We will build queries for following requirement:
 Stock pricing data is very dynamic and changes a lot during while trade is active. To address this problem we will use 
 RedisTimeSeries to store the historical and the current stock prices.
 
-This repo contains the actual intra-day prices for few stocks like RDBBANK, RDBMOTORS (name changed) taken from https://www.nseindia.com/
-in [files/RDBBANK_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/RDBBANK_intraday.csv) 
-and [files/RDBMOTORS_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/RDBMOTORS_intraday.csv)
+This repo contains the actual intra-day prices for few stocks like ABCBANK, ABCMOTORS (name changed) taken from https://www.nseindia.com/
+in [files/ABCBANK_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/ABCBANK_intraday.csv) 
+and [files/ABCMOTORS_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/ABCMOTORS_intraday.csv)
 
 **Pricing data ingestion**
 
 * Using [price_producer.py](https://github.com/bestarch/sample_trading_data_model/blob/main/price_producer.py) we will ingest the intra-day price changes for these securities into Redis Enterprise.
 * The script will push these changes into Redis Streams in a common stream `price_update_stream`.
     
-       XADD STREAMS * price_update_stream {"ticker":"RDBBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
+       XADD STREAMS * price_update_stream {"ticker":"ABCBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
 
 
 **Processing of pricing data**
@@ -187,11 +187,11 @@ together to provide the complete picture.
 
 Above consumer will create Time series key for tracking price for a security:
 
-    TS.CREATE price_history_ts:RDBBANK ticker rdbbank DUPLICATE_POLICY LAST
+    TS.CREATE price_history_ts:ABCBANK ticker ABCBANK DUPLICATE_POLICY LAST
 
 The consumer will update the pricing info in the timeseries db whenever it arrives:
 
-    TS.ADD price_history_ts:RDBBANK 1352332800 635.5
+    TS.ADD price_history_ts:ABCBANK 1352332800 635.5
 
 Now, since the RedisTimeSeries database contains all the pricing data for a particular security, we can write some RedisTimeSeries
 queries to get the pricing trend, current price, aggregation of the price overtime. We can also use downsampling feature to 
@@ -199,15 +199,15 @@ get the trend by days, weeks, months, years etc.
 
 #### Get latest price for a ticker
 
-    TS.GET price_history_ts:RDBBANK
+    TS.GET price_history_ts:ABCBANK
 
 #### Get the price info between two dates/times for a ticker
     
-    TS.RANGE price_history_ts:RDBBANK 1352332800 1392602800
+    TS.RANGE price_history_ts:ABCBANK 1352332800 1392602800
 
 #### Create rule for daily average price for a particular security
 
-    TS.CREATERULE price_history_ts:RDBBANK price_history_ts:RDBBANK_AGGR AGGREGATION avg 86400000
+    TS.CREATERULE price_history_ts:ABCBANK price_history_ts:ABCBANK_AGGR AGGREGATION avg 86400000
 
 
 
@@ -215,7 +215,7 @@ get the trend by days, weeks, months, years etc.
 Execute following steps to run this demo:
 
 1. To test our investors, account, security_lot data models, we need to add some test data. For that purpose,
-   let's execute `generator.py` present in `data_generators` folder (used to ingest data into Redis). This will add some test intra-day data for RDBBANK and RDBMOTORS securities.
+   let's execute `generator.py` present in `data_generators` folder (used to ingest data into Redis). This will add some test intra-day data for ABCBANK and ABCMOTORS securities.
 
 2. Next we will execute following RediSearch indexes before actually running any queries:
 
@@ -228,7 +228,7 @@ Execute following steps to run this demo:
    1. Get all the security lots by account number/id
         * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
    2. Get all the security lots by account number/id and ticker
-        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{RDBBANK}'` 
+        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{ABCBANK}'` 
    3. Get total quantity of all securities inside investor's security portfolio
         * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
    4. Get total quantity of all securities inside investor's security portfolio at a particular time
@@ -256,12 +256,12 @@ Execute following steps to run this demo:
 7. Execute following command to get the latest price:
 
 
-        TS.GET price_history_ts:RDBBANK
+        TS.GET price_history_ts:ABCBANK
 
 8. Now since the historic prices are populated in timeseries database, we can get the price info between two dates/times for a ticker
 
 
-        TS.RANGE price_history_ts:RDBBANK 1352332800 1392602800
+        TS.RANGE price_history_ts:ABCBANK 1352332800 1392602800
 9. To visualise this on browser, run the `server.py` script included in this repo. When successfully executed, open 
 [http://localhost:5555](http://localhost:5555) and observe the data in action. 
 You will see the current price, day low, day high and the intra-day trend.

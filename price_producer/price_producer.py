@@ -16,7 +16,7 @@ with open('config/app-config.properties', 'rb') as config_file:
 def ingestionTask(stock, price_stream_name, priceCol):
     print(f"Pricing data is getting generated for {stock}")
     try:
-        data = pd.read_csv("files/" + stock + "_intraday.csv")
+        data = pd.read_csv("files/for_pricing_data/" + stock + "_intraday.csv")
         chunk = 500
         for i, row in data.iterrows():
             dateInUnix = int(time.mktime(time.strptime(row['DateTime'], configs.get("DATE_FORMAT").data)))

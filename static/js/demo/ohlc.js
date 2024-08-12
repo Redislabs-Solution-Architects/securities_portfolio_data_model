@@ -64,7 +64,7 @@ $("#triggerOhlc").click(function(){
 
 function getSelectedStock() {
     if ($('#stockHid').val() == '') {
-        stockVal = 'HDFCBANK'
+        stockVal = 'ABCBANK'
     } else {
         stockVal = $('#stockHid').val()
     }

@@ -42,12 +42,12 @@ def generate_investor_account_data():
             conn.json().set("trading:investor:" + investorId, "$", investor)
             conn.json().set("trading:account:" + accountNo, "$", account)
 
-            # Generating purchase transaction data for 3 stocks: HDFCBANK, NESTLE and TATAMOTORS
-            generate_trading_data(conn, "files/HDFCBANK.csv", "HDFCBANK", accountNo)
-            generate_trading_data(conn, "files/NESTLE.csv", "NESTLE", accountNo)
-            generate_trading_data(conn, "files/TATAMOTORS.csv", "TATAMOTORS", accountNo)
+            # Generating purchase transaction data for 3 stocks: ABCBANK, ABCFOOD and ABCMOTORS
+            generate_trading_data(conn, "files/for_tnxs/ABCBANK.csv", "ABCBANK", accountNo)
+            generate_trading_data(conn, "files/for_tnxs/ABCFOOD.csv", "ABCFOOD", accountNo)
+            generate_trading_data(conn, "files/for_tnxs/ABCMOTORS.csv", "ABCMOTORS", accountNo)
 
-            print(f"Created investment & portfolio data of HDFCBANK, NESTLE & TATAMOTORS for investor {investorId} with accountNo {accountNo}.")
+            print(f"Created investment & portfolio data of ABCBANK, ABCFOOD & ABCMOTORS for investor {investorId} with accountNo {accountNo}.")
             print("Data generated - " + str(accs + 1) + " of " + str(accountCount))
     except Exception as inst:
         print(type(inst))
