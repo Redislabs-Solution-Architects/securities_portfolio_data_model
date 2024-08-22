@@ -13,8 +13,8 @@ configs = Properties()
 with open('config/app-config.properties', 'rb') as config_file:
     configs.load(config_file)
 
-def ingestionTask(stock, price_stream_name, priceCol):
-    print(f"Pricing data is getting generated for {stock}")
+def ingestionTask(stock, price_stream_name):
+    print(f"\nPricing data is getting generated for {stock}")
     try:
         data = pd.read_csv("files/for_pricing_data/" + stock + "_intraday.csv")
         chunk = 500
@@ -24,7 +24,7 @@ def ingestionTask(stock, price_stream_name, priceCol):
                       {"ticker": stock,
                        "datetime": row['DateTime'],
                        "dateInUnix": dateInUnix,
-                       "price": row[priceCol]})
+                       "price": row.iloc[2]})
             chunk -= 1
             if chunk == 0:
                 print(str(i+1)+" pricing record generated for "+stock)
@@ -35,7 +35,7 @@ def ingestionTask(stock, price_stream_name, priceCol):
         print(f"*** Completed *** [Trading recordset generated for {stock}]")
     except Exception as inst:
         print(type(inst))
-        print("Exception occurred while generating pricing data"+row[priceCol])
+        print("Exception occurred while generating pricing data")
         print(data)
         raise Exception('Exception occurred while generating pricing data. Delete the corrupted data and try again')
 
@@ -46,6 +46,5 @@ if __name__ == '__main__':
     test_stocks = configs.get("TEST_STOCKS").data.split(',')
     for test_stock in test_stocks:
         stock = test_stock.strip()
-        priceCol = stock + "EQN"
-        t = threading.Thread(target=ingestionTask, args=(stock, price_stream_name, priceCol))
+        t = threading.Thread(target=ingestionTask, args=(stock, price_stream_name))
         t.start()

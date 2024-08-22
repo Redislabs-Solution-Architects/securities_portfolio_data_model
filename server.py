@@ -70,6 +70,11 @@ def report():
 
 @app.route('/alerts')
 def alerts():
+    results, stocks = get_all_alerts()
+    return render_template('alerts.html', rules=results, stocks=stocks, enabledFeatures=enabledFeatures)
+
+
+def get_all_alerts():
     stocks = get_stock_list()
     keys = []
     cursor = 0
@@ -78,15 +83,13 @@ def alerts():
         keys.extend(alertKey)
         if cursor == 0:
             break
-
     results = []
     for k in keys:
         doc = r.json().get(k)
         doc.update({"key": k})
         doc.update({"dateTime": datetime.fromtimestamp(doc['dateTime']).strftime('%Y-%m-%d %H:%M:%S')})
         results.append(doc)
-
-    return render_template('alerts.html', rules=results, stocks=stocks, enabledFeatures=enabledFeatures)
+    return results, stocks
 
 
 @app.route('/newAlert', methods=['POST'])
@@ -104,7 +107,8 @@ def newAlert():
     print(f"Creating {triggerType} alert for {stock} with trigger price {triggerPrice} --> {json.dumps(alert)}.")
     r.json().set(f'alert:rule:{stock}', "$", alert)
     # r.set("stocks_with_rules", stock)
-    return redirect(url_for('alerts'))
+    results, stocks = get_all_alerts()
+    return render_template('alerts.html', rules=results, stocks=stocks, enabledFeatures=enabledFeatures)
 
 
 @app.route('/deleteRule', methods=['POST'])
@@ -113,7 +117,8 @@ def deleteRule():
     print(f"Deleting rule having Id {ruleId}")
     r.delete(ruleId)
     # r.srem("stocks_with_rules", ruleId.split(":")[2])
-    return redirect(url_for('alerts'))
+    results, stocks = get_all_alerts()
+    return render_template('alerts.html', rules=results, stocks=stocks, enabledFeatures=enabledFeatures)
 
 
 # This function is deprecated
@@ -484,4 +489,4 @@ if __name__ == '__main__':
         "notification": eval(str(os.getenv('notification', True)).capitalize()),
         "transactions": eval(str(os.getenv('transactions', True)).capitalize())
     }
-    app.run(host='0.0.0.0', debug=False, port=5555)
+    app.run(host='0.0.0.0', debug=True, port=5555)
