@@ -211,12 +211,12 @@ There are 2 parts here: Pricing data ingestion & Pricing data processing
 
 The files used to generate intra-day pricing data are present here:
 
-     files/for_pricing_data/ABCBANK_intraday.csv
-     files/for_pricing_data/ABCMOTORS_intraday.csv
+    files/for_pricing_data/ABCBANK_intraday.csv
+    files/for_pricing_data/ABCMOTORS_intraday.csv
 
 Above script will push pricing details into `price_update_stream` stream.
 
-       XADD STREAMS * price_update_stream {"ticker":"ABCBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
+    XADD STREAMS * price_update_stream {"ticker":"ABCBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
 
 
 Docker command to run this script:
