@@ -102,17 +102,6 @@ have multiple such lots at a given time the aggregation of which will provide th
 ![class_trading drawio](https://user-images.githubusercontent.com/26322220/188601634-be8d8622-9d88-4973-9994-1113854cae05.png)
 
 
-### Get portfolio details for an account 
-Although there are several use cases in a typical financial market, we will discuss only few of them. For instance, simple use cases like fetching the investor details, getting account details etc or some complicated ones, like:
-getting the value of the securities an investor holds at a time, getting average cost price of the stocks purchased and so on.
-
-We will build queries against the following requirements:
-1. Get all the security lots by account number/id
-2. Get all the security lots by account number/id and ticker
-3. Get total quantity of all securities inside investor's security portfolio
-4. Get total quantity of all securities inside investor's security portfolio at a particular time
-5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information
-
 
 ## Use cases
 
