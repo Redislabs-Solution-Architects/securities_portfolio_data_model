@@ -188,10 +188,10 @@ Docker command to execute this script:
 Stock price data is highly volatile and requires a real-time data platform to handle this use case. To address this requirement, we will use 
 leverage Streams & Timeseries to store the historical and the current stock prices.
 
-Following files (each for ABCBANK & ABCMOTORS) are used to push the pricing data into Streams in Redis for:
+Following files (for ABCBANK & ABCMOTORS) are used to push the pricing data into Streams in Redis:
 
-[files/ABCBANK_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/ABCBANK_intraday.csv) 
-[files/ABCMOTORS_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/ABCMOTORS_intraday.csv)
+    files/for_pricing_data/ABCBANK_intraday.csv
+    files/for_pricing_data/ABCMOTORS_intraday.csv
 
 Sequence of steps:
 There are 2 parts here: Pricing data ingestion & Pricing data processing
