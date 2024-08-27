@@ -352,12 +352,26 @@ def candleStickChart(sock, ticker):
             #print(type(exp))
 
 
+def getHistoricStockTradedVolumes(ticker, from_timestamp_millis):
+    ts_range_v = ts.range("ts_historical_" + ticker + ":v", from_time=from_timestamp_millis, to_time='+')
+    data = []
+    for i in range(len(ts_range_v)):
+        ts_v, val_v = ts_range_v[i]
+        item = {"x": ts_v, "v": val_v}
+        data.append(item)
+    return data
+
+
 @sock.route('/report/<timeframe>/<ticker>')
 def reportChart(sock, timeframe, ticker):
     timeframe = int(timeframe)
-    from_timestamp = datetime.now() - relativedelta(months=timeframe)
-    from_timestamp_millis = int(from_timestamp.timestamp() * 1000)
-    data = getHistoricStockPrices(ticker, from_timestamp_millis)
+    startTimeTs = int(time.mktime(time.strptime(configs.get("START_TIME").data, configs.get("DATE_FORMAT").data)))
+    report_from_timestamp = startTimeTs - (timeframe*30*24*60*60)
+
+    report_from_timestamp_millis = int(report_from_timestamp * 1000)
+    price_data = getHistoricStockPrices(ticker, report_from_timestamp_millis)
+    volume_data = getHistoricStockTradedVolumes(ticker, report_from_timestamp_millis)
+    data = {"price_data": price_data, "volume_data": volume_data}
     sock.send(json.dumps(data))
 
 

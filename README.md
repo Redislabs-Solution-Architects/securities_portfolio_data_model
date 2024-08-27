@@ -2,11 +2,9 @@
 
 ### Data model
 
-Here we will talk about a sample trading data model. The whole idea is what representational technique we choose to store our model
-and how efficient that technique would be. Needless to mention, this decision becomes more critical when we are implementing the
-trading system. Since, it is imperative to guarantee minimal response time, higher throughput and efficient data structures, we will 
-use Redis Enterprise for this purpose. 
-Specifically, RedisJSON as our modeling engine and RediSearch as full-text and secondary indexing engine.
+In this repository we are building a sample trading data model. The whole idea is to select a suitable  representational technique to store the data model
+that is efficient and extensible at the same time. especially when we are building a trading application. Since, it is imperative to guarantee minimal response time and a higher throughput, we will use native data structures of Redis like JSON and will leverage the Query Engine for indexing and querying the data.
+Following are some important entities in this sample application:
 
 1. Investor: This would typically be any type of investor, like retail, corporation etc. Let's choose a retail investor for that matter.
 
@@ -17,6 +15,8 @@ Specifically, RedisJSON as our modeling engine and RediSearch as full-text and s
       "id": "INV10001", 
       "name": "Johny M.", 
       "uid": "35178235834", 
+      "email": "johny.m@gmail.com",
+      "address": "..."
       "pan": "AHUIOHO684" 
     }
 ```
@@ -25,6 +25,7 @@ Specifically, RedisJSON as our modeling engine and RediSearch as full-text and s
        name -> Name of the investor
        uid -> Unique government id (SSN, Aadhaar etc)
        pan -> Unique taxpayer id provided by government (in India)
+       email -> Email address
    
 2. Account: This is the unique trading account of the investor. An investor can have multiple account against which the investment might have been made. 
   We will stick to only one account per investor in this demo
@@ -60,6 +61,7 @@ have multiple such lots at a given time the aggregation of which will provide th
       "date": 1665082800, 
       "price": 14500.00, 
       "quantity": 10, 
+      "lotValue": 145000,
       "type": "EQUITY"         
     }
     ```
@@ -71,6 +73,7 @@ have multiple such lots at a given time the aggregation of which will provide th
        price -> Price at which the lot was bought. This would be integer. 
                 We will use lowest possible currency denomination (Cents, Paisa etc). For that we will multiply the value with 100.
        quantity -> Total quantity of the lot
+       lotValue -> Transaction value of the stocks (price * quantity)
        type -> Type of security. For our case, it would be 'EQUITY'
  
 
@@ -82,8 +85,8 @@ have multiple such lots at a given time the aggregation of which will provide th
       "id": "NSE623846333",
       "stockCode": "ABCBANK",
       "isin": "INE211111034",
-      "stockName": "RDB Bank",
-      "description": "Something about RDB bank",
+      "stockName": "ABC Bank",
+      "description": "Something about ABC bank",
       "dateOfListing": "08/11/1995",
       "active": true
     }
@@ -100,97 +103,161 @@ have multiple such lots at a given time the aggregation of which will provide th
 
 
 ### Get portfolio details for an account 
-In a typical trading use case, there can be and there will be multiple use cases. Where one hand we may have very trivial 
-operations like fetching the investor details, getting account details etc then on the other hand we may see quite complicated queries as well like:
+Although there are several use cases in a typical financial market, we will discuss only few of them. For instance, simple use cases like fetching the investor details, getting account details etc or some complicated ones, like:
 getting the value of the securities an investor holds at a time, getting average cost price of the stocks purchased and so on.
 
-We will build queries for following requirement:
+We will build queries against the following requirements:
 1. Get all the security lots by account number/id
 2. Get all the security lots by account number/id and ticker
 3. Get total quantity of all securities inside investor's security portfolio
 4. Get total quantity of all securities inside investor's security portfolio at a particular time
 5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information
 
-#### Test the scenario
-* Firstly, you need to spin-up a new Redis Enterprise cluster or Redis Stack server.
-* Then, for testing above scenarios we need to create above data models like investors, account, security_lot objects. 
-  Here, we will ingest considerable amount of stock-purchase data for multiple accounts pertaining to 2 stocks: ABCMOTORS and ABCFOOD. 
-  For this, we will use `generator.py` file present in `data_generators` folder (used to ingest data into Redis) and execute following steps:
 
-      source venv/bin/activate
-      pip3 install -r requirements.txt
-      python3 data_generators/generator.py
+## Use cases
 
-  This will generate thousands of trading dataset like investor and account details and security lot information. You may increase the value of '**ACCOUNT_COUNT**' parameter present in `app-config.properties` to generate more records (say millions of records).
-  This will take some time depending upon the number of records you intend to generate.
+### Securities & portfolio management
 
-* Next, since we would be leveraging RediSearch to provide full-text indexing capabilites over JSON documents, we will execute suitable RediSearch index scripts. Execute following scripts:
+In this scenario, we will create aforementioned data models like investors, account, security_lot etc.
+We will use `data_generators/generator_redis.py` to generate these entity models.
+
+Sequence of steps:
+
+1. Install necessary libraries
 
 
-      FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC SORTABLE $.quantity as quantity NUMERIC SORTABLE $.lotValue as lotValue NUMERIC SORTABLE $.date as date NUMERIC SORTABLE
-      FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
+    source venv/bin/activate
+    pip3 install -r requirements.txt
+    python3 data_generators/generator.py
+
+By default, 1k account data will be generated.
+To change this, modify 'ACCOUNT_RECORD_COUNT' env variable
+
+Following files will be used to create the transaction records for the user:
+
+    files/for_tnxs/ABCBANK.csv
+    files/for_tnxs/ABCMOTORS.csv
+
+Docker command to execute this script:
+
+    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:generator
 
 
-* Now, let's test the scenario by executing following RediSearch queries using either redis-cli or RedisInsight tool:
-  1. Get all the security lots by account number/id
-       * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)'`
-  2. Get all the security lots by account number/id and ticker
-       * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{ABCMOTORS}'` 
-  3. Get total quantity of all securities inside investor's security portfolio
-       * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
-  4. Get total quantity of all securities inside investor's security portfolio at a particular time
-       * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
-  5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information.
-       * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice`
-  6. Get total portfolio value across all the stocks owned by a given account number.
-       * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC1000)' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue apply '(@totalLotValue/100)' as portfolioFolioValue`
+2. Next, we would be leveraging Redis Query Engine to provide full-text indexing capabilities on JSON 
+   documents. We will execute following secondary indexes:
+
+
+        FT.CREATE idx_trading_security_lot 
+            on JSON PREFIX 1 trading:securitylot: 
+        SCHEMA 
+            $.accountNo as accountNo TEXT 
+            $.ticker as ticker TAG 
+            $.price as price NUMERIC SORTABLE 
+            $.quantity as quantity NUMERIC SORTABLE 
+            $.lotValue as lotValue NUMERIC SORTABLE 
+            $.date as date NUMERIC SORTABLE
+
+
+        FT.CREATE idx_trading_account 
+            on JSON PREFIX 1 trading:account: 
+        SCHEMA 
+            $.accountNo as accountNo TEXT 
+            $.retailInvestor as retailInvestor TAG 
+            $.accountOpenDate as accountOpenDate TEXT    
+
+3. Now, let's test the scenario by executing following queries using either redis-cli or RedisInsight tool:
+
+   * Get all the security lots by account number/id
+
+         `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)'`
+
+   * Get all the security lots by account number/id and ticker
+
+         `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{ABCMOTORS}'`
+
+   * Get total quantity of all securities inside investor's security portfolio
+
+         `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
+
+   * Get total quantity of all securities inside investor's security portfolio at a particular time
+
+         `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
+
+   * Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information.
+
+         `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice`
+
+   * Get total portfolio value across all the stocks owned by a given account number.
+
+         `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC1000)' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue apply '(@totalLotValue/100)' as portfolioFolioValue`
+
 
 ******************************************************
 
-### Dynamic pricing and storage
-Stock pricing data is very dynamic and changes a lot during while trade is active. To address this problem we will use 
-RedisTimeSeries to store the historical and the current stock prices.
+### Dynamic stock pricing - Streams & Timeseries
 
-This repo contains the actual intra-day prices for few stocks like ABCBANK, ABCMOTORS (name changed) taken from https://www.nseindia.com/
-in [files/ABCBANK_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/ABCBANK_intraday.csv) 
-and [files/ABCMOTORS_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/ABCMOTORS_intraday.csv)
+Stock price data is highly volatile and requires a real-time data platform to handle this use case. To address this requirement, we will use 
+leverage Streams & Timeseries to store the historical and the current stock prices.
 
-**Pricing data ingestion**
+Following files (each for ABCBANK & ABCMOTORS) are used to push the pricing data into Streams in Redis for:
 
-* Using [price_producer.py](https://github.com/bestarch/sample_trading_data_model/blob/main/price_producer.py) we will ingest the intra-day price changes for these securities into Redis Enterprise.
-* The script will push these changes into Redis Streams in a common stream `price_update_stream`.
-    
+[files/ABCBANK_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/ABCBANK_intraday.csv) 
+[files/ABCMOTORS_intraday.csv](https://github.com/bestarch/sample_trading_data_model/blob/main/files/ABCMOTORS_intraday.csv)
+
+Sequence of steps:
+There are 2 parts here: Pricing data ingestion & Pricing data processing
+
+##### A. Pricing data ingestion
+
+1. Install the pre-requisites 
+
+
+    source venv/bin/activate
+    pip3 install -r requirements.txt
+
+2. We will ingest the intra-day price changes for these securities into Redis Enterprise.:
+
+
+    python3 price_producer/price_producer.py
+
+The files used to generate intra-day pricing data are present here:
+
+     files/for_pricing_data/ABCBANK_intraday.csv
+     files/for_pricing_data/ABCMOTORS_intraday.csv
+
+Above script will push pricing details into `price_update_stream` stream.
+
        XADD STREAMS * price_update_stream {"ticker":"ABCBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
 
 
-**Processing of pricing data**
+Docker command to run this script:
+
+    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:price_producer
+
+
+##### B. Processing pricing data
 
 These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
-in '/demo' folder and written using Java, Spring etc.
+in '/consumer/pricing-deaggregator' folder and written using Java 21 & Spring Boot.
 
-The docker image for the consumer is: `abhishekcoder/demo.streams.consumer`
+The docker image for the consumer is: `abhishekcoder/sample_trading_data_model:deaggregator`
 
 This consumer performs following responsibilities:
 
       1. Consuming the pricing data, remodeling it and disaggregating it based on the stock ticker
-      2. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
-      3. Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
+      2. Create Timeseries compaction rules (Open, high, Close, Low) based on defined bucket size (default is 5 sec) 
+      3. Pushes these pricing info to RedisTimeSeries database in the following key format --> `'price_history_ts:<STOCK_TICKER>'`
+      4. This also creates a price notification stream. This may be used by the notification engine to send pricing alerts to users.
+      5. [Optional] Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
+
+Docker command to execute the de-aggregator:
+
+    `docker run -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:deaggregator`
 
 
-Following diagram shows how data flows in and out of the system and how different pieces stitch 
-together to provide the complete picture. 
-
-![trading drawio](https://user-images.githubusercontent.com/26322220/188598080-7bdf315f-09f5-4b5c-85c6-54a3b80865ee.png)
-
-
-### Tracking stock prices
-
-Above consumer will create Time series key for tracking price for a security:
+This consumer will create Timeseries key for tracking price for a security & update the pricing info in the timeseries db whenever it arrives:
 
     TS.CREATE price_history_ts:ABCBANK ticker ABCBANK DUPLICATE_POLICY LAST
-
-The consumer will update the pricing info in the timeseries db whenever it arrives:
-
     TS.ADD price_history_ts:ABCBANK 1352332800 635.5
 
 Now, since the RedisTimeSeries database contains all the pricing data for a particular security, we can write some RedisTimeSeries
@@ -210,58 +277,46 @@ get the trend by days, weeks, months, years etc.
     TS.CREATERULE price_history_ts:ABCBANK price_history_ts:ABCBANK_AGGR AGGREGATION avg 86400000
 
 
+Following diagram shows how data flows in and out of the system and how different pieces stitch 
+together to provide the complete picture. 
 
-## Steps in sequence
-Execute following steps to run this demo:
-
-1. To test our investors, account, security_lot data models, we need to add some test data. For that purpose,
-   let's execute `generator.py` present in `data_generators` folder (used to ingest data into Redis). This will add some test intra-day data for ABCBANK and ABCMOTORS securities.
-
-2. Next we will execute following RediSearch indexes before actually running any queries:
-
-````
-    FT.CREATE idx_trading_security_lot on JSON PREFIX 1 trading:securitylot: SCHEMA $.accountNo as accountNo TEXT $.ticker as ticker TAG $.price as price NUMERIC SORTABLE $.quantity as quantity NUMERIC SORTABLE $.lotValue as lotValue NUMERIC SORTABLE $.date as date NUMERIC SORTABLE
-    FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account: SCHEMA $.accountNo as accountNo TEXT $.retailInvestor as retailInvestor TAG $.accountOpenDate as accountOpenDate TEXT    
-````
-
-3. Now, we can execute the queries to test our data model. The first part of this exercise/demo is complete:
-   1. Get all the security lots by account number/id
-        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)' `
-   2. Get all the security lots by account number/id and ticker
-        * `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{ABCBANK}'` 
-   3. Get total quantity of all securities inside investor's security portfolio
-        * `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
-   4. Get total quantity of all securities inside investor's security portfolio at a particular time
-        * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
-   5. Get average cost price of the owned stock at a given date and time. If current price of the stock is known, this can also provide the profit and loss information.
-        * `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice`
-
-4. For the second part, we will test the dynamic pricing and storage use case of securities. 
-   For that start the Redis Streams consumer using following docker command. (You may also execute directly via any IDE like STs,IntelliJ etc).
-      If successfully started, this will wait for any pricing signals.
+![img_1.png](img_1.png)
 
 
-        docker run -p 127.0.0.1:8080:8080 -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSOWRD>> abhishekcoder/demo.streams.consumer:latest
-5. Next, push the pricing changes into the Redis Streams. For this run the `price_producer.py`.
-   use this:
+### Historical ticker price & volume - Timeseries
+
+One of the important use cases of financial industry is to track and get the deeper insights from the historic stock price
+and the volume traded each trading day.
+Timeseries data structure provided by Redis provides a real-time data-structure using which we can achieve on-demand 
+access to the pricing data at any point in time.
+
+Sequence of steps:
+
+##### Historic data
+
+1. Install the pre-requisites 
 
 
-     source venv/bin/activate
-     pip3 install -r requirements.txt
-     python3 price_producer.py
+    source venv/bin/activate
+    pip3 install -r requirements.txt
 
-   If successfully started, it will start pushing the ticker prices into the Redis Streams.
-6. You may notice, the stream consumer we started in step 1 will begin to process the messages and will push them 
-   to RedisTimeSeries database.
-7. Execute following command to get the latest price:
+2. We will ingest the historic pricing data using this script:
 
 
-        TS.GET price_history_ts:ABCBANK
+    python3 data_generators/report.py
 
-8. Now since the historic prices are populated in timeseries database, we can get the price info between two dates/times for a ticker
+The above script will ingest the data for last 10 years for following stocks in Timeseries data structure:
+
+    files/for_report/ABCBANK.csv
+    files/for_report/ABCMOTORS.csv
+
+Docker command to run this script:
+
+    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:report
 
 
-        TS.RANGE price_history_ts:ABCBANK 1352332800 1392602800
+### Visualise the complete app
+
 9. To visualise this on browser, run the `server.py` script included in this repo. When successfully executed, open 
 [http://localhost:5555](http://localhost:5555) and observe the data in action. 
 You will see the current price, day low, day high and the intra-day trend.
@@ -269,20 +324,7 @@ You will see the current price, day low, day high and the intra-day trend.
 ![image](https://user-images.githubusercontent.com/26322220/232309062-e81a7354-1733-4609-a94e-8a3ebe7a363c.png)
 
 
-## Dynamic security pricing using docker
-The individual apps like price_producer, consumer and UI server has been dockerised and present in docker hub.
-This gives us an easy way to bootstrap all the apps and test the results quickly. 
-Deploy Redis Enterprise cluster. Note down its URL, port, password and execute following containers in order:
-
-`docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:price_producer`
-
-`docker run -p 127.0.0.1:5555:5555 -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:server`
-
-`docker run -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSWORD> abhishekcoder/demo.streams.consumer:latest`
-
-Open http://localhost:5555 and check the result
-
-## Dynamic security pricing using docker-compose
+### Run everything using docker-compose
 We can execute the entire application stack using docker-compose. 
 The `docker-compose.yaml` file is present in the application directory.
 Just change the desired variables in `docker-compose-redis-variables.env` file and execute the following command. 

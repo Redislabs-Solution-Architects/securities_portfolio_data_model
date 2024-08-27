@@ -69,7 +69,7 @@ def generate_trading_data(conn, file, ticker, accountNo):
                 dateInUnix = int(time.mktime(time.strptime(stock['Date '][i], "%d-%b-%Y")))
                 buyingPrice = float(str(stock['OPEN '][i]).replace(',', '')) * 100
 
-                quantity = fake.pyint(min_value=5, max_value=50)
+                quantity = fake.pyint(min_value=1, max_value=25)
                 secLotId = fake.lexify("????").upper() + str(i) + str(fake.random_number(digits=8, fix_len=True))
                 securityLot = {
                     "id": secLotId, "accountNo": accountNo, "ticker": ticker,

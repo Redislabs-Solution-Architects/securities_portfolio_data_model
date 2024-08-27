@@ -29,6 +29,8 @@ function displayChart(timeframe, stockVal) {
                 }]
             },
              options: {
+                parsing: false,
+                spanGaps: true,
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
@@ -65,12 +67,17 @@ function displayChart(timeframe, stockVal) {
 
         socket.addEventListener('message', ev => {
             data = JSON.parse(ev.data)
-            chart.data.datasets.forEach((dataset) => {
-                  for( i in data){
-                    dataset.data.push(data[i]);
-                  }
-                  console.log(dataset.data)
-            });
+
+            price_data = chart.data.datasets[0]
+            for( i in data.price_data){
+                price_data.data.push(data.price_data[i]);
+            }
+
+//            volume_data = chart.data.datasets[0]
+//            for( i in data.volume_data){
+//                volume_data.data.push(data.volume_data[i]);
+//            }
+
             chart.update();
         });
     }
