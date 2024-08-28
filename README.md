@@ -16,7 +16,7 @@ Following are some important entities in this sample application:
       "name": "Johny M.", 
       "uid": "35178235834", 
       "email": "johny.m@gmail.com",
-      "address": "..."
+      "address": "...",
       "pan": "AHUIOHO684" 
     }
 ```
