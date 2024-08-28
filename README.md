@@ -129,7 +129,7 @@ Following files will be used to create the transaction records for the user:
 
 Docker command to execute this script:
 
-    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:generator
+    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/sample_trading_data_model:generator
 
 
 2. Next, we would be leveraging Redis Query Engine to provide full-text indexing capabilities on JSON 
@@ -310,13 +310,37 @@ Docker command to run this script:
 [http://localhost:5555](http://localhost:5555) and observe the data in action. 
 You will see the current price, day low, day high and the intra-day trend.
 
+The docker command to start the server:
+
+    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> \
+               -e ticker_trend=True \
+               -e report=True \
+               -e notification=True \
+               -e transactions=True \
+    abhishekcoder/sample_trading_data_model:server
+
+
 ![image](https://user-images.githubusercontent.com/26322220/232309062-e81a7354-1733-4609-a94e-8a3ebe7a363c.png)
 
 
 ### Run everything using docker-compose
 We can execute the entire application stack using docker-compose. 
 The `docker-compose.yaml` file is present in the application directory.
-Just change the desired variables in `docker-compose-redis-variables.env` file and execute the following command. 
+There are various env variable which can be set. 
+Change the desired variables in `docker-compose-redis-variables.env` file before executing the 'docker compose up' command. 
+
+    HOST
+    PASSWORD
+    PORT
+
+Apart from above, following feature flag can also be set. This will help to enable/disable a particular feature.
+For instance, to disable Notification and Reporting feature (historical pricing in timeseries), set these env variables:
+    
+    ticker_trend=True
+    report=False
+    notification=False
+    transactions=True
+
 Wait for a minute and 
 open http://localhost:5555 to check the result.
 

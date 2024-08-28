@@ -16,7 +16,7 @@ def generate_investor_account_data(conn):
     curs = conn.cursor()
     investorIdPrefix = "INV1000"
     accountIdPrefix = "ACC1000"
-    accountCount = int(configs.get("ACCOUNT_RECORD_COUNT").data)
+    accountCount = os.getenv('ACCOUNT_RECORD_COUNT', 1000)
     try:
        for accs in range(accountCount):
             investorId = investorIdPrefix + str(accs)
