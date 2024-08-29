@@ -24,6 +24,7 @@ def ingestionTask(file, path):
             ts.add("ts_historical_" + stock + ":c", dateInUnix*1000, row['Close'], duplicate_policy='last')
             ts.add("ts_historical_" + stock + ":h", dateInUnix*1000, row['High'], duplicate_policy='last')
             ts.add("ts_historical_" + stock + ":l", dateInUnix*1000, row['Low'], duplicate_policy='last')
+            ts.add("ts_historical_" + stock + ":v", dateInUnix*1000, row['Volume'], duplicate_policy='last')
         print(f"Historic prices for {stock} successfully loaded in Redis")
     except Exception as inst:
         print(type(inst))

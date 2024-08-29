@@ -39,28 +39,57 @@ ts = r.ts()
 
 @app.route('/')
 def overview():
-    return render_template('overview.html')
+    stocks = get_stock_list()
+    return render_template('overview.html', stocks=stocks, enabledFeatures=enabledFeatures)
+
+
+def get_stock_list():
+    test_stocks = configs.get("TEST_STOCKS").data.split(',')
+    stocks = []
+    for stock in test_stocks:
+        stocks.append(stock)
+    return stocks
 
 
 @app.route('/stock-stats', methods=['POST'])
 def getstats():
     stock = request.form['stockSelector']
-    return render_template('overview.html', stock=stock)
+    return render_template('overview.html', stock=stock, enabledFeatures=enabledFeatures)
 
 
 @app.route('/portfolio-detail')
 def portfolioDetail():
-    return render_template('portfolio.html')
+    return render_template('portfolio.html', enabledFeatures=enabledFeatures)
 
 
 @app.route('/report')
 def report():
-    return render_template('report.html')
+    stocks = get_stock_list()
+    return render_template('report.html', stocks=stocks, enabledFeatures=enabledFeatures)
 
 
 @app.route('/alerts')
 def alerts():
-    return render_template('alerts.html')
+    results, stocks = get_all_alerts()
+    return render_template('alerts.html', rules=results, stocks=stocks, enabledFeatures=enabledFeatures)
+
+
+def get_all_alerts():
+    stocks = get_stock_list()
+    keys = []
+    cursor = 0
+    while True:
+        cursor, alertKey = r.scan(cursor, match="alert:rule:*", count=10)
+        keys.extend(alertKey)
+        if cursor == 0:
+            break
+    results = []
+    for k in keys:
+        doc = r.json().get(k)
+        doc.update({"key": k})
+        doc.update({"dateTime": datetime.fromtimestamp(doc['dateTime']).strftime('%Y-%m-%d %H:%M:%S')})
+        results.append(doc)
+    return results, stocks
 
 
 @app.route('/newAlert', methods=['POST'])
@@ -78,7 +107,8 @@ def newAlert():
     print(f"Creating {triggerType} alert for {stock} with trigger price {triggerPrice} --> {json.dumps(alert)}.")
     r.json().set(f'alert:rule:{stock}', "$", alert)
     # r.set("stocks_with_rules", stock)
-    return redirect(url_for('alerts'))
+    results, stocks = get_all_alerts()
+    return render_template('alerts.html', rules=results, stocks=stocks, enabledFeatures=enabledFeatures)
 
 
 @app.route('/deleteRule', methods=['POST'])
@@ -87,9 +117,12 @@ def deleteRule():
     print(f"Deleting rule having Id {ruleId}")
     r.delete(ruleId)
     # r.srem("stocks_with_rules", ruleId.split(":")[2])
-    return redirect(url_for('alerts'))
+    results, stocks = get_all_alerts()
+    return render_template('alerts.html', rules=results, stocks=stocks, enabledFeatures=enabledFeatures)
 
 
+# This function is deprecated
+# Not used anymore
 @app.route('/system-alerts')
 def systemAlerts():
     keys = []
@@ -319,12 +352,26 @@ def candleStickChart(sock, ticker):
             #print(type(exp))
 
 
+def getHistoricStockTradedVolumes(ticker, from_timestamp_millis):
+    ts_range_v = ts.range("ts_historical_" + ticker + ":v", from_time=from_timestamp_millis, to_time='+')
+    data = []
+    for i in range(len(ts_range_v)):
+        ts_v, val_v = ts_range_v[i]
+        item = {"x": ts_v, "v": val_v}
+        data.append(item)
+    return data
+
+
 @sock.route('/report/<timeframe>/<ticker>')
 def reportChart(sock, timeframe, ticker):
     timeframe = int(timeframe)
-    from_timestamp = datetime.now() - relativedelta(months=timeframe)
-    from_timestamp_millis = int(from_timestamp.timestamp() * 1000)
-    data = getHistoricStockPrices(ticker, from_timestamp_millis)
+    startTimeTs = int(time.mktime(time.strptime(configs.get("START_TIME").data, configs.get("DATE_FORMAT").data)))
+    report_from_timestamp = startTimeTs - (timeframe*30*24*60*60)
+
+    report_from_timestamp_millis = int(report_from_timestamp * 1000)
+    price_data = getHistoricStockPrices(ticker, report_from_timestamp_millis)
+    volume_data = getHistoricStockTradedVolumes(ticker, report_from_timestamp_millis)
+    data = {"price_data": price_data, "volume_data": volume_data}
     sock.send(json.dumps(data))
 
 
@@ -450,4 +497,10 @@ def createIndexes():
 
 if __name__ == '__main__':
     createIndexes()
+    enabledFeatures = {
+        "ticker_trend": eval(str(os.getenv('ticker_trend', True)).capitalize()),
+        "report": eval(str(os.getenv('report', True)).capitalize()),
+        "notification": eval(str(os.getenv('notification', True)).capitalize()),
+        "transactions": eval(str(os.getenv('transactions', True)).capitalize())
+    }
     app.run(host='0.0.0.0', debug=True, port=5555)

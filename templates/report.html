@@ -30,39 +30,7 @@
 
     <div id="wrapper">
 
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-            <a class="sidebar-brand d-flex align-items-left justify-content-left" href="#">
-                <div class="sidebar-brand-text mx-3">Securities demo</div>
-            </a>
-
-            <hr class="sidebar-divider">
-
-            <li class="nav-item active">
-                <a class="nav-link" href="/">
-                    <i class="fas fa-fw fa-chart-line"></i>
-                    <span>Stock overview</span></a>
-            </li>
-
-            <li class="nav-item active">
-                <a class="nav-link" href="/portfolio-detail">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Portfolio & transactions</span></a>
-            </li>
-
-            <li class="nav-item active">
-                <a class="nav-link" href="/alerts">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Alerts</span></a>
-            </li>
-
-            <li class="nav-item active">
-                <a class="nav-link" href="/report">
-                    <i class="fas fa-fw fa-chart-line"></i>
-                    <span>Reports</span></a>
-            </li>
-
-        </ul>
+        {% include 'nav.html' %}
 
         <div id="content-wrapper" class="d-flex flex-column">
 
@@ -71,14 +39,24 @@
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <ul class="navbar-nav ml-auto" id="ulid">
 
+                         <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="https://raw.githubusercontent.com/bestarch/sample_trading_data_model/main/files/images/report.png" role="button" target=”_blank”>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">See how it works</span>
+                                <i class="fas fa-magic"></i>
+                            </a>
+                        </li>
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
                         <li class="nav-item dropdown no-arrow">
                             <div class="nav-link dropdown-toggle">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">Stock</span>
                                 <form id="stockForm" action="/stock-stats" method="post">
                                     <select class="form-select form-select-sm " aria-label=".form-select-sm example" id="stockSelector" name="stockSelector">
-                                        <option class="dropdown-item" value="-">--Select--</option>
-                                        <option class="dropdown-item" value="HDFCBANK">HDFCBANK</option>
-                                        <option class="dropdown-item" value="TATAMOTORS">TATAMOTORS</option>
+                                        <option class="dropdown-item" value="-" selected disabled>--Select--</option>
+                                        {% for st in stocks %}
+                                            <option value="{{ st }}">{{ st }}</option>
+                                        {% endfor %}
                                     </select>
                                     <input type="hidden" id="stockHid" value="{{stock}}">
                                 </form>

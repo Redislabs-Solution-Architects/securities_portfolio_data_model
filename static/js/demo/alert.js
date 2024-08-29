@@ -1,3 +1,6 @@
+// This file is Deprecated.
+// Not used anymore
+
 $(document).ready(function() {
     url = '/system-alerts'
     table = $('#alertDataTable').DataTable({

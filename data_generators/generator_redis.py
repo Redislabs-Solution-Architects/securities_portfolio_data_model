@@ -21,7 +21,7 @@ fake = Faker('en_IN')
 def generate_investor_account_data():
     investorIdPrefix = "INV1000"
     accountIdPrefix = "ACC1000"
-    accountCount = int(configs.get("ACCOUNT_RECORD_COUNT").data)
+    accountCount = os.getenv('ACCOUNT_RECORD_COUNT', 1000)
     try:
         for accs in range(accountCount):
             investorId = investorIdPrefix + str(accs)
@@ -42,12 +42,12 @@ def generate_investor_account_data():
             conn.json().set("trading:investor:" + investorId, "$", investor)
             conn.json().set("trading:account:" + accountNo, "$", account)
 
-            # Generating purchase transaction data for 3 stocks: HDFCBANK, NESTLE and TATAMOTORS
-            generate_trading_data(conn, "files/HDFCBANK.csv", "HDFCBANK", accountNo)
-            generate_trading_data(conn, "files/NESTLE.csv", "NESTLE", accountNo)
-            generate_trading_data(conn, "files/TATAMOTORS.csv", "TATAMOTORS", accountNo)
+            # Generating purchase transaction data for 3 stocks: ABCBANK, ABCFOOD and ABCMOTORS
+            generate_trading_data(conn, "files/for_tnxs/ABCBANK.csv", "ABCBANK", accountNo)
+            generate_trading_data(conn, "files/for_tnxs/ABCFOOD.csv", "ABCFOOD", accountNo)
+            generate_trading_data(conn, "files/for_tnxs/ABCMOTORS.csv", "ABCMOTORS", accountNo)
 
-            print(f"Created investment & portfolio data of HDFCBANK, NESTLE & TATAMOTORS for investor {investorId} with accountNo {accountNo}.")
+            print(f"Created investment & portfolio data of ABCBANK, ABCFOOD & ABCMOTORS for investor {investorId} with accountNo {accountNo}.")
             print("Data generated - " + str(accs + 1) + " of " + str(accountCount))
     except Exception as inst:
         print(type(inst))
@@ -69,7 +69,7 @@ def generate_trading_data(conn, file, ticker, accountNo):
                 dateInUnix = int(time.mktime(time.strptime(stock['Date '][i], "%d-%b-%Y")))
                 buyingPrice = float(str(stock['OPEN '][i]).replace(',', '')) * 100
 
-                quantity = fake.pyint(min_value=5, max_value=50)
+                quantity = fake.pyint(min_value=1, max_value=25)
                 secLotId = fake.lexify("????").upper() + str(i) + str(fake.random_number(digits=8, fix_len=True))
                 securityLot = {
                     "id": secLotId, "accountNo": accountNo, "ticker": ticker,
