@@ -131,6 +131,9 @@ Docker command to execute this script:
 
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/sample_trading_data_model:generator
 
+Component diagram:
+
+![img_2.png](img_2.png)
 
 2. Next, we would be leveraging Redis Query Engine to provide full-text indexing capabilities on JSON 
    documents. We will execute following secondary indexes:
@@ -195,6 +198,10 @@ Following files (for ABCBANK & ABCMOTORS) are used to push the pricing data into
 
 Sequence of steps:
 There are 2 parts here: Pricing data ingestion & Pricing data processing
+
+Component diagram:
+
+![img_3.png](img_3.png)
 
 ##### A. Pricing data ingestion
 
@@ -266,18 +273,16 @@ get the trend by days, weeks, months, years etc.
     TS.CREATERULE price_history_ts:ABCBANK price_history_ts:ABCBANK_AGGR AGGREGATION avg 86400000
 
 
-Following diagram shows how data flows in and out of the system and how different pieces stitch 
-together to provide the complete picture. 
-
-![img_1.png](img_1.png)
-
-
 ### Historical ticker price & volume - Timeseries
 
 One of the important use cases of financial industry is to track and get the deeper insights from the historic stock price
 and the volume traded each trading day.
 Timeseries data structure provided by Redis provides a real-time data-structure using which we can achieve on-demand 
 access to the pricing data at any point in time.
+
+Component diagram:
+
+![img_4.png](img_4.png)
 
 Sequence of steps:
 
@@ -320,7 +325,10 @@ The docker command to start the server:
     abhishekcoder/sample_trading_data_model:server
 
 
-![image](https://user-images.githubusercontent.com/26322220/232309062-e81a7354-1733-4609-a94e-8a3ebe7a363c.png)
+Following diagram shows how data flows in and out of the system and how different pieces stitch 
+together. 
+
+![img_1.png](img_1.png)
 
 
 ### Run everything using docker-compose
