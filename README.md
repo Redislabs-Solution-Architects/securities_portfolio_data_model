@@ -205,7 +205,7 @@ Component diagram:
 
 ![stock_pricing.png](files/images/stock_pricing.png)
 
-##### A. Pricing data ingestion
+#### A. Pricing data ingestion
 
 1. Install the pre-requisites 
 
@@ -233,7 +233,7 @@ Docker command to run this script:
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:price_producer
 
 
-##### B. Processing pricing data
+#### B. Processing pricing data
 
 These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
 in '/consumer/pricing-deaggregator' folder and written using Java 21 & Spring Boot.
@@ -274,6 +274,7 @@ get the trend by days, weeks, months, years etc.
 
     TS.CREATERULE price_history_ts:ABCBANK price_history_ts:ABCBANK_AGGR AGGREGATION avg 86400000
 
+******************************************************
 
 ### Historical ticker price & volume - Timeseries
 
@@ -309,6 +310,7 @@ Docker command to run this script:
 
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:report
 
+******************************************************
 
 ### Visualise the complete app
 
@@ -331,6 +333,7 @@ together.
 
 ![architecture.png](files/images/architecture.png)
 
+******************************************************
 
 ### Run everything using docker-compose
 We can execute the entire application stack using docker-compose. 
