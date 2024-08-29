@@ -110,6 +110,11 @@ have multiple such lots at a given time the aggregation of which will provide th
 In this scenario, we will create aforementioned data models like investors, account, security_lot etc.
 We will use `data_generators/generator_redis.py` to generate these entity models.
 
+Component diagram:
+
+![portfolio_transactions.png](files/images/portfolio_transactions.png)
+
+
 Sequence of steps:
 
 1. Install necessary libraries
@@ -131,9 +136,6 @@ Docker command to execute this script:
 
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/sample_trading_data_model:generator
 
-Component diagram:
-
-![img_2.png](img_2.png)
 
 2. Next, we would be leveraging Redis Query Engine to provide full-text indexing capabilities on JSON 
    documents. We will execute following secondary indexes:
@@ -201,7 +203,7 @@ There are 2 parts here: Pricing data ingestion & Pricing data processing
 
 Component diagram:
 
-![img_3.png](img_3.png)
+![stock_pricing.png](files/images/stock_pricing.png)
 
 ##### A. Pricing data ingestion
 
@@ -282,11 +284,10 @@ access to the pricing data at any point in time.
 
 Component diagram:
 
-![img_4.png](img_4.png)
+![report.png](files/images/report.png)
 
 Sequence of steps:
 
-##### Historic data
 
 1. Install the pre-requisites 
 
@@ -311,7 +312,7 @@ Docker command to run this script:
 
 ### Visualise the complete app
 
-9. To visualise this on browser, run the `server.py` script included in this repo. When successfully executed, open 
+To visualise this on browser, run the `server.py` script included in this repo. When successfully executed, open 
 [http://localhost:5555](http://localhost:5555) and observe the data in action. 
 You will see the current price, day low, day high and the intra-day trend.
 
@@ -328,7 +329,7 @@ The docker command to start the server:
 Following diagram shows how data flows in and out of the system and how different pieces stitch 
 together. 
 
-![img_1.png](img_1.png)
+![architecture.png](files/images/architecture.png)
 
 
 ### Run everything using docker-compose
