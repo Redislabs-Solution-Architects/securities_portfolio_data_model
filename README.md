@@ -205,7 +205,7 @@ Component diagram:
 
 ![stock_pricing.png](files/images/stock_pricing.png)
 
-#### A. Pricing data ingestion
+#### A. Pricing data - Ingestion
 
 1. Install the pre-requisites 
 
@@ -233,7 +233,7 @@ Docker command to run this script:
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:price_producer
 
 
-#### B. Processing pricing data
+#### B. Pricing data - Processing
 
 These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
 in '/consumer/pricing-deaggregator' folder and written using Java 21 & Spring Boot.
