@@ -1,4 +1,4 @@
-# Sample Trading data model
+# Sample Securities Portfolio & data model
 
 ### Data model
 
