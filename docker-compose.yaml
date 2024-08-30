@@ -1,4 +1,7 @@
 version: "3.9"
+networks:
+  portfolio-app:
+    driver: bridge
 services:
   server:
     image: "abhishekcoder/sample_trading_data_model:server"
@@ -8,6 +11,8 @@ services:
       - redis
       - price_producer
       - deaggregator
+    networks:
+      - portfolio-app
     build: .
     ports:
       - "127.0.0.1:5555:5555"
@@ -18,6 +23,8 @@ services:
       - docker-compose-redis-variables.env
     depends_on:
       - redis
+    networks:
+      - portfolio-app
     restart: always
 
   deaggregator:
@@ -27,6 +34,8 @@ services:
     depends_on:
       - redis
       - price_producer
+    networks:
+      - portfolio-app
 
   tnx_generator:
     image: "abhishekcoder/sample_trading_data_model:generator"
@@ -34,6 +43,8 @@ services:
       - docker-compose-redis-variables.env
     depends_on:
       - redis
+    networks:
+      - portfolio-app
     restart: always
 
   report:
@@ -42,6 +53,8 @@ services:
       - docker-compose-redis-variables.env
     depends_on:
       - redis
+    networks:
+      - portfolio-app
     restart: always
 
   redis:
@@ -50,7 +63,9 @@ services:
       - docker-compose-redis-variables.env
     command: /bin/sh -c "redis-stack-server --requirepass $$PASSWORD"
     ports:
-      - "127.0.0.1:6379:6379"
+      - "6379:6379"
+    networks:
+      - portfolio-app
     volumes:
       - redis_data:/data
 
