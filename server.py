@@ -44,7 +44,6 @@ def overview():
 
 
 def get_stock_list():
-    test_stocks = configs.get("TEST_STOCKS").data.split(',')
     stocks = []
     for stock in test_stocks:
         stocks.append(stock)
@@ -53,8 +52,9 @@ def get_stock_list():
 
 @app.route('/stock-stats', methods=['POST'])
 def getstats():
+    stocks = get_stock_list()
     stock = request.form['stockSelector']
-    return render_template('overview.html', stock=stock, enabledFeatures=enabledFeatures)
+    return render_template('overview.html', stocks=stocks, stock=stock, enabledFeatures=enabledFeatures)
 
 
 @app.route('/portfolio-detail')
@@ -497,6 +497,7 @@ def createIndexes():
 
 if __name__ == '__main__':
     createIndexes()
+    test_stocks = os.getenv('TEST_STOCKS', 'ABCBANK,ABCMOTORS').split(',')
     enabledFeatures = {
         "ticker_trend": eval(str(os.getenv('ticker_trend', True)).capitalize()),
         "report": eval(str(os.getenv('report', True)).capitalize()),

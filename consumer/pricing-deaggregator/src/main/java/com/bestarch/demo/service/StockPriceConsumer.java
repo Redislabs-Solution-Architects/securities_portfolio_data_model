@@ -41,7 +41,7 @@ public class StockPriceConsumer implements StreamListener<String, MapRecord<Stri
 	@Value("${timeseries.prefix}")
 	private String PREFIX;
 	
-	@Value("${timeseries.stocks}")
+	@Value("${test.stocks:ABCBANK,ABCMOTORS}")
 	private String stocks;
 	
 	@Value("${timeseries.bucket}")
