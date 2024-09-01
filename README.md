@@ -124,6 +124,7 @@ The sequence of steps:
     pip3 install -r requirements.txt
     python3 data_generators/generator.py
 
+
 By default, 1k account data will be generated.
 To change this, modify 'ACCOUNT_RECORD_COUNT' env variable
 
@@ -201,7 +202,7 @@ The following files (for ABCBANK & ABCMOTORS) are used to push the pricing data 
 The sequence of steps:
 There are 2 parts here: Pricing data ingestion & Pricing data processing
 
-Component diagram:
+The component diagram:
 
 ![stock_pricing.png](files/images/stock_pricing.png)
 
