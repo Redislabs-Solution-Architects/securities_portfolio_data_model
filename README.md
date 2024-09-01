@@ -127,7 +127,6 @@ The sequence of steps:
     ```python
     source venv/bin/activate
     pip3 install -r requirements.txt
-    python3 data_generators/generator.py
     ```
 
 2. Ingest the sample security transaction records using the following python script:
@@ -191,15 +190,15 @@ The sequence of steps:
 
    * Get the total quantity of all securities inside the investor's security portfolio at a particular time
 
-         FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity
+         FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1725186610]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity
 
    * Get the average cost price of the owned stock at a given date and time. If the current price of the stock is known, this can also provide the profit and loss information.
 
-         FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice
+         FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1725186610]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice
 
    * Get total portfolio value across all the stocks owned by a given account number.
 
-         FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC1000)' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue apply '(@totalLotValue/100)' as portfolioFolioValue
+         FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001)' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue apply '(@totalLotValue/100)' as portfolioFolioValue
 
 
 ******************************************************
