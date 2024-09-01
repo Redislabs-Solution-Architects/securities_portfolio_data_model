@@ -105,6 +105,10 @@ have multiple such lots at a given time the aggregation of which will provide th
 
 ## Use cases
 
+1. Create a DB on Redis Cloud subscription OR DB on Redis Software OR Redis Stack database.
+
+2. Goto the home directory of the application and follow the below steps (Replace the HOST, PASSWORD & PASSWORD field with the correct values):
+
 ### Securities & portfolio management
 
 In this scenario, we will create the aforementioned data models like investors, accounts, security_lot etc.
@@ -126,6 +130,11 @@ The sequence of steps:
     python3 data_generators/generator.py
     ```
 
+2. Ingest the sample security transaction records using the following python script:
+
+   ```python
+   HOST=localhost PASSWORD=admin PORT=6379 ACCOUNT_RECORD_COUNT=1000 python data_generators/generator_redis.py
+   ```
 
    By default, 1k account data will be generated.
    To change this, modify '**ACCOUNT_RECORD_COUNT**' env variable
@@ -137,14 +146,14 @@ The sequence of steps:
     files/for_tnxs/ABCMOTORS.csv
     ```
     
-   Docker command to execute this script:
+   Execute this script using Docker command:
     
     ```python
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/sample_trading_data_model:generator
 
     ```
 
-2. Next, we would be leveraging Redis Query Engine to provide full-text indexing capabilities on JSON 
+3. Next, we would be leveraging Redis Query Engine to provide full-text indexing capabilities on JSON 
    documents. We will execute the following secondary indexes:
 
 
@@ -166,7 +175,7 @@ The sequence of steps:
             $.retailInvestor as retail investor TAG 
             $.accountOpenDate as accountOpenDate TEXT    
 
-3. Now, let's test the scenario by executing the following queries using either redis-cli or RedisInsight tool:
+4. Now, let's test the scenario by executing the following queries using either redis-cli or RedisInsight tool:
 
    * Get all the security lots by account number/ID
 
@@ -225,7 +234,7 @@ The component diagram:
 2. We will ingest the intra-day price changes for these securities into Redis Enterprise.:
 
     ```python
-    python3 price_producer/price_producer.py
+    HOST=localhost PASSWORD=admin PORT=6379 TEST_STOCKS=ABCBANK,ABCMOTORS python price_producer/price_producer.py
     ```
 
    The files used to generate intra-day pricing data are presented here:
@@ -242,11 +251,12 @@ The component diagram:
     ```
 
 
-   Docker command to run this script:
+   Execute this script using Docker command:
 
     ```python
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:price_producer
     ```
+    
 
 
 #### B. Pricing Data - Processing
@@ -264,9 +274,11 @@ This consumer performs the following responsibilities:
       4. This also creates a price notification stream. This may be used by the notification engine to send pricing alerts to users.
       5. [Optional] Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
 
-Docker command to execute the de-aggregator:
+Execute this script using Docker command:
 
-    docker run -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSWORD> -e TEST_STOCKS=ABCBANK,ABCMOTORS abhishekcoder/sample_trading_data_model:deaggregator
+```python
+docker run -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSWORD> -e TEST_STOCKS=ABCBANK,ABCMOTORS abhishekcoder/sample_trading_data_model:deaggregator
+```
 
 
 This consumer will create a Timeseries key for tracking the price for the security & update the pricing info in the Timeseries db whenever it arrives:
@@ -316,7 +328,7 @@ The sequence of steps:
 2. We will ingest the historic pricing data using this script:
 
     ```python
-    python3 data_generators/report.py
+    HOST=localhost PASSWORD=admin PORT=6379 python data_generators/report.py
     ```
 
    The above script will ingest the data for the last 10 years for the following stocks in timeseries data structure:
@@ -326,7 +338,7 @@ The sequence of steps:
     files/for_report/ABCMOTORS.csv
     ```
 
-   Docker command to run this script:
+   Execute this script using Docker command:
 
     ```python
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:report
@@ -340,7 +352,13 @@ To visualise this on the browser, run the `server.py` script included in this re
 [http://localhost:5555](http://localhost:5555) and observe the data in action. 
 You will see the current price, day low, day high and the intra-day trend.
 
-The docker command to start the server:
+Execute as a Python script:
+
+```python
+HOST=localhost PASSWORD=admin PORT=6379 report=True ticker_trend=True notification=True transactions=True TEST_STOCKS=ABCBANK,ABCMOTORS python server.py
+```
+
+Execute this script using Docker command:
 
 ```python
 docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> \
@@ -348,6 +366,7 @@ docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> \
             -e report=True \
             -e notification=True \
             -e transactions=True \
+            -e TEST_STOCKS=ABCBANK,ABCMOTORS \
 abhishekcoder/sample_trading_data_model:server
 ```
 
@@ -358,6 +377,7 @@ together.
 ![architecture.png](files/images/architecture.png)
 
 ******************************************************
+
 
 ### Run everything using docker-compose
 We can execute the entire application stack using docker-compose. 
