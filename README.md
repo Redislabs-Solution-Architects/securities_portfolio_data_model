@@ -120,22 +120,29 @@ The sequence of steps:
 1. Install necessary libraries
 
 
+    ```python
     source venv/bin/activate
     pip3 install -r requirements.txt
     python3 data_generators/generator.py
+    ```
+
 
    By default, 1k account data will be generated.
    To change this, modify '**ACCOUNT_RECORD_COUNT**' env variable
     
    The following files will be used to create the transaction records for the user:
     
+    ```python
     files/for_tnxs/ABCBANK.csv
     files/for_tnxs/ABCMOTORS.csv
+    ```
     
    Docker command to execute this script:
     
+    ```python
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/sample_trading_data_model:generator
 
+    ```
 
 2. Next, we would be leveraging Redis Query Engine to provide full-text indexing capabilities on JSON 
    documents. We will execute the following secondary indexes:
@@ -163,27 +170,27 @@ The sequence of steps:
 
    * Get all the security lots by account number/ID
 
-         `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)'`
+         FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001)'
 
    * Get all the security lots by account number/ID and ticker
 
-         `FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{ABCMOTORS}'`
+         FT.SEARCH idx_trading_security_lot '@accountNo: (ACC10001) @ticker:{ABCMOTORS}'
 
    * Get the total quantity of all securities inside the investor's security portfolio
 
-         `FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
+         FT.AGGREGATE idx_trading_security_lot '@accountNo: (ACC10001)' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity
 
    * Get the total quantity of all securities inside the investor's security portfolio at a particular time
 
-         `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity`
+         FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date: [0 1665082800]' GROUPBY 1 @ticker REDUCE SUM 1 @quantity as totalQuantity
 
    * Get the average cost price of the owned stock at a given date and time. If the current price of the stock is known, this can also provide the profit and loss information.
 
-         `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice`
+         FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC10001) @date:[0 1665498506]' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue reduce sum 1 @quantity as totalQuantity apply '(@totalLotValue/(@totalQuantity*100))' as avgPrice
 
    * Get total portfolio value across all the stocks owned by a given account number.
 
-         `FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC1000)' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue apply '(@totalLotValue/100)' as portfolioFolioValue`
+         FT.AGGREGATE idx_trading_security_lot '@accountNo:(ACC1000)' groupby 1 @ticker reduce sum 1 @lotValue as totalLotValue apply '(@totalLotValue/100)' as portfolioFolioValue
 
 
 ******************************************************
@@ -250,7 +257,7 @@ This consumer performs the following responsibilities:
 
 Docker command to execute the de-aggregator:
 
-    `docker run -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSWORD> -e TEST_STOCKS=ABCBANK,ABCMOTORS abhishekcoder/sample_trading_data_model:deaggregator`
+    docker run -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSWORD> -e TEST_STOCKS=ABCBANK,ABCMOTORS abhishekcoder/sample_trading_data_model:deaggregator
 
 
 This consumer will create a Timeseries key for tracking the price for the security & update the pricing info in the Timeseries db whenever it arrives:
