@@ -342,12 +342,14 @@ You will see the current price, day low, day high and the intra-day trend.
 
 The docker command to start the server:
 
-    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> \
-               -e ticker_trend=True \
-               -e report=True \
-               -e notification=True \
-               -e transactions=True \
-    abhishekcoder/sample_trading_data_model:server
+```python
+docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> \
+            -e ticker_trend=True \
+            -e report=True \
+            -e notification=True \
+            -e transactions=True \
+abhishekcoder/sample_trading_data_model:server
+```
 
 
 The following diagram shows how data flows in and out of the system and how different pieces stitch 
