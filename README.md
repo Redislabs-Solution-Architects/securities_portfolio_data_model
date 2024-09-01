@@ -217,27 +217,36 @@ The component diagram:
 1. Install the pre-requisites 
 
 
+    ```python
     source venv/bin/activate
     pip3 install -r requirements.txt
+    ```
 
 2. We will ingest the intra-day price changes for these securities into Redis Enterprise.:
 
-
+    ```python
     python3 price_producer/price_producer.py
+    ```
 
    The files used to generate intra-day pricing data are presented here:
 
+    ```python
     files/for_pricing_data/ABCBANK_intraday.csv
     files/for_pricing_data/ABCMOTORS_intraday.csv
+    ```
 
    The above script will push pricing details into the `price_update_stream` stream.
 
+    ```python
     XADD STREAMS * price_update_stream {"ticker":"ABCBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
+    ```
 
 
    Docker command to run this script:
 
+    ```python
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:price_producer
+    ```
 
 
 #### B. Pricing Data - Processing
@@ -299,23 +308,29 @@ The sequence of steps:
 
 1. Install the pre-requisites 
 
-
+    ```python
     source venv/bin/activate
     pip3 install -r requirements.txt
+    ```
 
 2. We will ingest the historic pricing data using this script:
 
-
+    ```python
     python3 data_generators/report.py
+    ```
 
-The above script will ingest the data for the last 10 years for the following stocks in timeseries data structure:
+   The above script will ingest the data for the last 10 years for the following stocks in timeseries data structure:
 
+    ```python
     files/for_report/ABCBANK.csv
     files/for_report/ABCMOTORS.csv
+    ```
 
-Docker command to run this script:
+   Docker command to run this script:
 
+    ```python
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:report
+    ```
 
 ******************************************************
 
