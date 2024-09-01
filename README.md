@@ -119,17 +119,17 @@ The sequence of steps:
 
 1. Install necessary libraries
 
-By default, 1k account data will be generated.
-To change this, modify '**ACCOUNT_RECORD_COUNT**' env variable
-
-The following files will be used to create the transaction records for the user:
-
-    files/for_tnxs/ABCBANK.csv
-    files/for_tnxs/ABCMOTORS.csv
-
-Docker command to execute this script:
-
-    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/sample_trading_data_model:generator
+    By default, 1k account data will be generated.
+    To change this, modify '**ACCOUNT_RECORD_COUNT**' env variable
+    
+    The following files will be used to create the transaction records for the user:
+    
+        files/for_tnxs/ABCBANK.csv
+        files/for_tnxs/ABCMOTORS.csv
+    
+    Docker command to execute this script:
+    
+        docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/sample_trading_data_model:generator
 
 
 2. Next, we would be leveraging Redis Query Engine to provide full-text indexing capabilities on JSON 
@@ -213,17 +213,17 @@ The component diagram:
 
     python3 price_producer/price_producer.py
 
-The files used to generate intra-day pricing data are presented here:
+   The files used to generate intra-day pricing data are presented here:
 
     files/for_pricing_data/ABCBANK_intraday.csv
     files/for_pricing_data/ABCMOTORS_intraday.csv
 
-The above script will push pricing details into the `price_update_stream` stream.
+   The above script will push pricing details into the `price_update_stream` stream.
 
     XADD STREAMS * price_update_stream {"ticker":"ABCBANK", "datetime": "02/09/2022 9:00:07 AM", "price": 1440.0}
 
 
-Docker command to run this script:
+   Docker command to run this script:
 
     docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:price_producer
 
