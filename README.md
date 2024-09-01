@@ -119,12 +119,6 @@ The sequence of steps:
 
 1. Install necessary libraries
 
-
-    source venv/bin/activate
-    pip3 install -r requirements.txt
-    python3 data_generators/generator.py
-
-
 By default, 1k account data will be generated.
 To change this, modify '**ACCOUNT_RECORD_COUNT**' env variable
 
