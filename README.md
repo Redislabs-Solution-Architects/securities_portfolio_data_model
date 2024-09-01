@@ -119,17 +119,22 @@ The sequence of steps:
 
 1. Install necessary libraries
 
-    By default, 1k account data will be generated.
-    To change this, modify '**ACCOUNT_RECORD_COUNT**' env variable
+
+    source venv/bin/activate
+    pip3 install -r requirements.txt
+    python3 data_generators/generator.py
+
+   By default, 1k account data will be generated.
+   To change this, modify '**ACCOUNT_RECORD_COUNT**' env variable
     
-    The following files will be used to create the transaction records for the user:
+   The following files will be used to create the transaction records for the user:
     
-        files/for_tnxs/ABCBANK.csv
-        files/for_tnxs/ABCMOTORS.csv
+    files/for_tnxs/ABCBANK.csv
+    files/for_tnxs/ABCMOTORS.csv
     
-    Docker command to execute this script:
+   Docker command to execute this script:
     
-        docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/sample_trading_data_model:generator
+    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/sample_trading_data_model:generator
 
 
 2. Next, we would be leveraging Redis Query Engine to provide full-text indexing capabilities on JSON 
