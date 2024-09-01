@@ -126,7 +126,7 @@ The sequence of steps:
 
 
 By default, 1k account data will be generated.
-To change this, modify 'ACCOUNT_RECORD_COUNT' env variable
+To change this, modify '**ACCOUNT_RECORD_COUNT**' env variable
 
 The following files will be used to create the transaction records for the user:
 
