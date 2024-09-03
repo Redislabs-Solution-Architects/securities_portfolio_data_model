@@ -23,7 +23,7 @@ def generate_investor_account_data():
     accountIdPrefix = "ACC1000"
     accountCount = os.getenv('ACCOUNT_RECORD_COUNT', 1000)
     try:
-        for accs in range(accountCount):
+        for accs in range(int(accountCount)):
             investorId = investorIdPrefix + str(accs)
             accountNo = accountIdPrefix + str(accs)
             name = fake.name()

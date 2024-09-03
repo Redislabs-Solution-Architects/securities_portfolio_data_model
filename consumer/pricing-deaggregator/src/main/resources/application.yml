@@ -13,7 +13,9 @@ price:
 timeseries:
   prefix: "price_history_ts:"
   bucket: 5
-  stocks: HDFCBANK,TATAMOTORS
+
+test:
+  stocks: ABCBANK,ABCMOTORS
 
 logging:
   level:

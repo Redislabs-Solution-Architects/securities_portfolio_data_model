@@ -43,7 +43,7 @@ def ingestionTask(stock, price_stream_name):
 if __name__ == '__main__':
     conn = RedisConnection().get_connection()
     price_stream_name = configs.get("PRICE_STREAM").data
-    test_stocks = configs.get("TEST_STOCKS").data.split(',')
+    test_stocks = os.getenv('TEST_STOCKS', 'ABCBANK,ABCMOTORS').split(',')
     for test_stock in test_stocks:
         stock = test_stock.strip()
         t = threading.Thread(target=ingestionTask, args=(stock, price_stream_name))

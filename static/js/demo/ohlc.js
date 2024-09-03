@@ -11,6 +11,10 @@ $("#triggerOhlc").click(function(){
     date2 = date.plus({ seconds: 10 });
     initial = [{x: date.valueOf(), o: 100, h: 101, l: 99, c: 905},
             {x: date2.valueOf(), o: 905, h: 106, l: 101, c: 905}]
+
+    if (chart) {
+        chart.destroy();
+    }
     var chart = new Chart(ctx, {
         type: 'candlestick',
         data: {

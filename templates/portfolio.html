@@ -48,7 +48,7 @@
                     <ul class="navbar-nav ml-auto" id="ulid">
 
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="https://raw.githubusercontent.com/bestarch/sample_trading_data_model/main/files/images/portfolio_transactions.png" role="button" target=”_blank”>
+                            <a class="nav-link dropdown-toggle" href="https://github.com/bestarch/securities_portfolio_data_model?tab=readme-ov-file#securities--portfolio-management" role="button" target=”_blank”>
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">See how it works</span>
                                 <i class="fas fa-magic"></i>
                             </a>
@@ -87,48 +87,6 @@
 
                     <h1 class="h3 mb-2 text-gray-800">User transactions</h1>
 
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Search user transactions</h6>
-                        </div>
-
-                        <div class="card-body">
-                            <form action="" class="form-inline pb-2">
-<!--                                <div class="form-group mx-3">-->
-<!--                                        <label class="mr-2">Investor#</label><input type="text" id="investorId" class="form-control" placeholder="" >-->
-<!--                                </div>-->
-                                <div class="form-group mx-3">
-                                        <label class="mr-2">A/C#</label><input type="text" id="accountId" class="form-control" placeholder="" >
-                                </div>
-                                <div class="form-group mx-3">
-                                        <label class="mr-2">Stock</label><input type="text" id="stockId" class="form-control" placeholder="" >
-                                </div>
-                                <button type="button" id="resultBtnId" class="btn btn-info">Get result</button>
-
-                            </form>
-<!--                            <div class="small mx-3 mb-4" id="metaDiv"></div>-->
-
-                            <div class="table-responsive">
-                                <table class="table table-striped" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr class="info">
-                                            <th>A/C #</th>
-<!--                                            <th>A/C holder name</th>-->
-                                            <th>Stock</th>
-                                            <th>Date</th>
-                                            <th>Price (INR)</th>
-                                            <th>Quantity</th>
-                                            <th>Total value (INR)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-
-                        </div>
-
-                    </div>
-
                     <div class="row" id="accDetailDiv">
 
                         <div class="col-xl-3 col-md-3 mb-4">
@@ -154,7 +112,7 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-success mb-1">
-                                                Stocks as on  </div>
+                                                Stocks as of today</div>
                                             <div class="h5 mb-0 font-weight-bold small text-gray-800" id="totalSecurityCountByTime"></div>
                                         </div>
                                         <div class="col-auto">
@@ -197,6 +155,49 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Search user transactions</h6>
+                        </div>
+
+                        <div class="card-body">
+                            <form action="" class="form-inline pb-2">
+<!--                                <div class="form-group mx-3">-->
+<!--                                        <label class="mr-2">Investor#</label><input type="text" id="investorId" class="form-control" placeholder="" >-->
+<!--                                </div>-->
+                                <div class="form-group mx-3">
+                                        <label class="mr-2">A/C#</label><input type="text" id="accountId" class="form-control" placeholder="" >
+                                </div>
+                                <div class="form-group mx-3">
+                                        <label class="mr-2">Stock</label><input type="text" id="stockId" class="form-control" placeholder="" >
+                                </div>
+                                <button type="button" id="resultBtnId" class="btn btn-info">Get result</button>
+
+                            </form>
+<!--                            <div class="small mx-3 mb-4" id="metaDiv"></div>-->
+
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr class="info">
+                                            <th>A/C #</th>
+<!--                                            <th>A/C holder name</th>-->
+                                            <th>Stock</th>
+                                            <th>Date</th>
+                                            <th>Price (INR)</th>
+                                            <th>Quantity</th>
+                                            <th>Total value (INR)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+
                         </div>
 
                     </div>
