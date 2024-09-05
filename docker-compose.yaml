@@ -4,7 +4,7 @@ networks:
     driver: bridge
 services:
   server:
-    image: "abhishekcoder/sample_trading_data_model:server"
+    image: "abhishekcoder/securities_portfolio_app:server"
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
@@ -18,7 +18,7 @@ services:
       - "127.0.0.1:5555:5555"
       
   price_producer:
-    image: "abhishekcoder/sample_trading_data_model:price_producer"
+    image: "abhishekcoder/securities_portfolio_app:price_producer"
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
@@ -28,7 +28,7 @@ services:
     restart: always
 
   deaggregator:
-    image: "abhishekcoder/sample_trading_data_model:deaggregator"
+    image: "abhishekcoder/securities_portfolio_app:deaggregator"
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
@@ -38,7 +38,7 @@ services:
       - portfolio-app
 
   tnx_generator:
-    image: "abhishekcoder/sample_trading_data_model:generator"
+    image: "abhishekcoder/securities_portfolio_app:generator"
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
@@ -48,7 +48,7 @@ services:
     restart: always
 
   report:
-    image: "abhishekcoder/sample_trading_data_model:report"
+    image: "abhishekcoder/securities_portfolio_app:report"
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
