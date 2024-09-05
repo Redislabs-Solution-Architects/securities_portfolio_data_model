@@ -48,7 +48,7 @@ def generate_investor_account_data():
             generate_trading_data(conn, "files/for_tnxs/ABCMOTORS.csv", "ABCMOTORS", accountNo)
 
             print(f"Created investment & portfolio data of ABCBANK, ABCFOOD & ABCMOTORS for investor {investorId} with accountNo {accountNo}.")
-            print("Data generated - " + str(accs + 1) + " of " + str(accountCount))
+        print(str(accountCount) +" portfolio records generated")
     except Exception as inst:
         print(type(inst))
         traceback.print_exc()
