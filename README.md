@@ -273,12 +273,16 @@ This consumer performs the following responsibilities:
       4. This also creates a price notification stream. This may be used by the notification engine to send pricing alerts to users.
       5. [Optional] Push the latest pricing info into a Pub-Sub channel so that the active clients/investors who have subscribed can get the latest pricing notifications
 
-Execute this script using Docker command:
+Docker command to execute processor:
 
 ```python
 docker run -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSWORD> -e TEST_STOCKS=ABCBANK,ABCMOTORS abhishekcoder/sample_trading_data_model:deaggregator
 ```
 
+Java command to execute the processor:
+```python
+java -jar consumer/pricing-deaggregator/target/demo.streams.consumer-0.0.1-SNAPSHOT.jar --env spring.redis.password=<PASSWORD> TEST_STOCKS=ABCBANK,ABCMOTORS
+```
 
 This consumer will create a Timeseries key for tracking the price for the security & update the pricing info in the Timeseries db whenever it arrives:
 
