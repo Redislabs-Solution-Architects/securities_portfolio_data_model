@@ -1,0 +1,102 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: securities-portfolio-app-price-producer-job
+  namespace: app-poc
+  labels:
+    app: securities-portfolio-app-price-producer
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: securities-portfolio-app-price-producer
+    spec:
+      containers:
+        - name: price-producer
+          image: abhishekcoder/securities_portfolio_app:price_producer
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: my-config
+      restartPolicy: Never
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: securities-portfolio-app-deaggregator-job
+  namespace: app-poc
+  labels:
+    app: securities-portfolio-app-deaggregator
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: securities-portfolio-app-deaggregator
+    spec:
+      containers:
+        - name: deaggregator
+          image: abhishekcoder/securities_portfolio_app:deaggregator
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: my-config
+      restartPolicy: Never
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: securities-portfolio-app-generator-job
+  namespace: app-poc
+  labels:
+    app: securities-portfolio-app-generator
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: securities-portfolio-app-generator
+    spec:
+      containers:
+        - name: generator
+          image: abhishekcoder/securities_portfolio_app:generator
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: my-config
+      restartPolicy: Never
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: securities-portfolio-app-report-job
+  namespace: app-poc
+  labels:
+    app: securities-portfolio-app-report
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: securities-portfolio-app-report
+    spec:
+      containers:
+        - name: report
+          image: abhishekcoder/securities_portfolio_app:report
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: my-config
+      restartPolicy: Never

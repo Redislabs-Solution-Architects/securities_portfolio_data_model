@@ -63,21 +63,36 @@ function displayChart(timeframe, stockVal) {
             }
         });
 
-        var socket = new WebSocket('ws://' + location.host + '/report/'+ timeframe + '/' + stockVal);
+        url = 'ws://' + location.host + '/report/'+ timeframe + '/' + stockVal
+        var socket = new WebSocket(url);
+
+         socket.addEventListener('close', (event) => {
+            console.log("Connection closed. Reconnecting...");
+            setTimeout(() => {
+                console.log("Reconnecting...");
+                socket = new WebSocket(url);
+                socket.addEventListener('message', ev => {
+                    data = JSON.parse(ev.data)
+
+                    price_data = chart.data.datasets[0]
+                    for( i in data.price_data){
+                        price_data.data.push(data.price_data[i]);
+                    }
+                    chart.update();
+                });
+            }, 5000);
+        });
 
         socket.addEventListener('message', ev => {
             data = JSON.parse(ev.data)
-
             price_data = chart.data.datasets[0]
             for( i in data.price_data){
                 price_data.data.push(data.price_data[i]);
             }
-
 //            volume_data = chart.data.datasets[0]
 //            for( i in data.volume_data){
 //                volume_data.data.push(data.volume_data[i]);
 //            }
-
             chart.update();
         });
     }
