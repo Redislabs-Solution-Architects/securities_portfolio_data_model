@@ -419,7 +419,7 @@ def notification(sock):
                 for message_id, fields in message[1]:
                     #print(f"Alert consumer:: Message ID: {message_id}")
                     stock = fields.get('ticker')
-                    price = fields.get('price')
+                    price = float(fields.get('price'))
 
                     rule = r.json().get(f'alert:rule:{stock}')
                     notification = ''
