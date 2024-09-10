@@ -76,19 +76,20 @@ def alerts():
 
 def get_all_alerts():
     stocks = get_stock_list()
-    keys = []
-    cursor = 0
-    while True:
-        cursor, alertKey = r.scan(cursor, match="alert:rule:*", count=10)
-        keys.extend(alertKey)
-        if cursor == 0:
-            break
+    #############################################
+    ## Query used: FT.SEARCH idx_trading_alerts *
+    #############################################
+    qry = '*'
+    query = (Query(qry).paging(0, 100))
+    time1 = time.time()
+    docs = r.ft("idx_trading_alerts").search(query).docs
+    time2 = time.time()
+    print(f"List of alerts retrieved in {(time2 - time1):.3f} seconds")
     results = []
-    for k in keys:
-        doc = r.json().get(k)
-        doc.update({"key": k})
-        doc.update({"dateTime": datetime.fromtimestamp(doc['dateTime']).strftime('%Y-%m-%d %H:%M:%S')})
-        results.append(doc)
+    for doc in docs:
+        temp = json.loads(doc.json)
+        temp['id'] = doc.id
+        results.append(temp)
     return results, stocks
 
 
@@ -100,7 +101,7 @@ def newAlert():
     alert = {
         "stock": stock,
         "triggerType": triggerType,
-        "triggerPrice": triggerPrice,
+        "triggerPrice": int(triggerPrice),
         "dateTime": int(time.time()),
         "active": True
     }
@@ -416,9 +417,9 @@ def notification(sock):
 
             for message in messages:
                 for message_id, fields in message[1]:
-                    print(f"Alert consumer:: Message ID: {message_id}")
+                    #print(f"Alert consumer:: Message ID: {message_id}")
                     stock = fields.get('ticker')
-                    price = fields.get('price')
+                    price = float(fields.get('price'))
 
                     rule = r.json().get(f'alert:rule:{stock}')
                     notification = ''
@@ -426,8 +427,10 @@ def notification(sock):
                         triggerPrice = r.json().get(f'alert:rule:{stock}', "triggerPrice")
                         triggerType = r.json().get(f'alert:rule:{stock}', "triggerType")
 
+
                         if 'GT_TRIGGER_PRICE' == triggerType:
                             if price > triggerPrice:
+                                print(f"price > triggerPrice --> Trigger price: {triggerPrice}, stock price: {price}")
                                 notification = {
                                     'message': f'Stock has surpassed the trigger price of {triggerPrice}. '
                                                f'Stock price: {price}'}
@@ -435,6 +438,7 @@ def notification(sock):
 
                         elif 'LT_TRIGGER_PRICE' == triggerType:
                             if price < triggerPrice:
+                                print(f"price < triggerPrice --> Trigger price: {triggerPrice}, stock price: {price}")
                                 notification = {
                                     'message': f'Stock has fallen below the trigger price of {triggerPrice}. '
                                                f'Stock price: {price}'}
@@ -442,6 +446,7 @@ def notification(sock):
 
                         elif 'EQ_TRIGGER_PRICE' == triggerType:
                             if price == triggerPrice:
+                                print(f"price == triggerPrice --> Trigger price: {triggerPrice}, stock price: {price}")
                                 notification = {
                                     'message': f'Stock has fallen below the trigger price of {triggerPrice}. '
                                                f'Stock price: {price}'}
@@ -477,6 +482,11 @@ def createIndexes():
         r.ft("idx_trading_security_lot").create_index(schema,
                                                       definition=IndexDefinition(prefix=["trading:securitylot:"],
                                                                                  index_type=IndexType.JSON))
+        print("Created index: idx_trading_security_lot")
+    except Exception as inst:
+        logging.warning("Exception occurred while creating idx_trading_security_lot index")
+
+    try:
         # Creating index having definition::
         # FT.CREATE idx_trading_account on JSON PREFIX 1 trading:account:
         # SCHEMA
@@ -490,9 +500,27 @@ def createIndexes():
                   TextField("$.accountOpenDate", as_name="accountOpenDate"))
         r.ft("idx_trading_account").create_index(schema, definition=IndexDefinition(prefix=["trading:account:"],
                                                                                     index_type=IndexType.JSON))
-        print("Created indexes: idx_trading_security_lot, idx_trading_account")
+        print("Created index: idx_trading_account")
     except Exception as inst:
-        logging.warning("Exception occurred while creating indexes")
+        logging.warning("Exception occurred while creating idx_trading_account index")
+
+    try:
+        # Creating index for alerts:
+        # FT.CREATE idx_trading_alerts ON JSON PREFIX 1 alert:rule:
+        # SCHEMA
+        #   $.stock AS stock TAG
+        #   $.triggerPrice AS triggerPrice NUMERIC SORTABLE
+        #   $.triggerType AS triggerType TAG
+        #   $.dateTime AS dateTime NUMERIC SORTABLE
+        schema = (TagField("$.stock", as_name="stock"),
+                  NumericField("$.triggerPrice", as_name="triggerPrice", sortable=True),
+                  TagField("$.triggerType", as_name="triggerType"),
+                  NumericField("$.dateTime", as_name="dateTime"))
+        r.ft("idx_trading_alerts").create_index(schema, definition=IndexDefinition(prefix=["alert:rule:"],
+                                                                                    index_type=IndexType.JSON))
+        print("Created index: idx_trading_alerts")
+    except Exception as inst:
+        logging.warning("Exception occurred while creating idx_trading_alerts index")
 
 
 if __name__ == '__main__':

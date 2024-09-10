@@ -16,6 +16,7 @@ services:
     build: .
     ports:
       - "127.0.0.1:5555:5555"
+    restart: always
       
   price_producer:
     image: "abhishekcoder/securities_portfolio_app:price_producer"
@@ -25,7 +26,7 @@ services:
       - redis
     networks:
       - portfolio-app
-    restart: always
+    restart: on-failure
 
   deaggregator:
     image: "abhishekcoder/securities_portfolio_app:deaggregator"
@@ -36,6 +37,7 @@ services:
       - price_producer
     networks:
       - portfolio-app
+    restart: on-failure
 
   tnx_generator:
     image: "abhishekcoder/securities_portfolio_app:generator"
@@ -45,7 +47,7 @@ services:
       - redis
     networks:
       - portfolio-app
-    restart: always
+    restart: on-failure
 
   report:
     image: "abhishekcoder/securities_portfolio_app:report"
@@ -55,7 +57,7 @@ services:
       - redis
     networks:
       - portfolio-app
-    restart: always
+    restart: on-failure
 
   redis:
     image: "redis/redis-stack:latest"
@@ -68,6 +70,7 @@ services:
       - portfolio-app
     volumes:
       - redis_data:/data
+    restart: on-failure
 
 volumes:
   redis_data:

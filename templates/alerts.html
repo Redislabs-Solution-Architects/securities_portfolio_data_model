@@ -145,7 +145,7 @@
                                                 <td>{{ rule.triggerPrice }}</td>
                                                 <td>{{ rule.dateTime }}</td>
                                                 <td><form action="/deleteRule" method="post">
-                                                        <input type="hidden" value="{{ rule.key }}" name="ruleId">
+                                                        <input type="hidden" value="{{ rule.id }}" name="ruleId">
                                                         <button class="btn btn-danger btn-circle btn-sm" type="submit"><i class="fas fa-trash"></i></button>
                                                     </form>
                                                 </td>

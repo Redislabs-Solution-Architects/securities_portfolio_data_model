@@ -1,0 +1,16 @@
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: "securities-portfolio-app-service"
+  namespace: "app-poc"
+  labels:
+    app: "securities-portfolio-app-server"
+spec:
+  ports:
+  - protocol: "TCP"
+    port: 5555
+    targetPort: 5555
+  selector:
+    app: "securities-portfolio-app-server"
+  type: "LoadBalancer"
+  loadBalancerIP: ""

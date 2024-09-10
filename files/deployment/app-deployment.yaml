@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: securities-portfolio-app-server-deployment
+  namespace: app-poc
+  labels:
+    app: securities-portfolio-app-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: securities-portfolio-app-server
+  template:
+    metadata:
+      labels:
+        app: securities-portfolio-app-server
+    spec:
+      containers:
+        - name: server
+          image: abhishekcoder/securities_portfolio_app:server
+          ports:
+          - name: http
+            containerPort: 5555
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: my-config
