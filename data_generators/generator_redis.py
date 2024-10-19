@@ -53,6 +53,10 @@ def generate_trading_data(conn, accountNo):
     for file in files:
         df = pd.read_csv(path + file)
         ticker = file[:-4]
+
+        count = 0
+        pipeline = conn.pipeline()
+
         for i, row in df.iterrows():
             chance = 10
             try:
@@ -68,15 +72,27 @@ def generate_trading_data(conn, accountNo):
                     max_value = fake.pyint(min_value=1, max_value=18)
                     quantity = fake.pyint(min_value=1, max_value=max_value)
                     secLotId = fake.lexify("????").upper() + str(i) + str(fake.random_number(digits=8, fix_len=True))
+                    lotVal = buyingPrice * quantity
+                    desc = f"{row['Date ']}: {quantity} {ticker} stocks having unit price of INR {buyingPrice/100} credited to accountNo {accountNo}. The transaction value is INR {lotVal/100}"
+
                     securityLot = {
                         "id": secLotId, "accountNo": accountNo, "ticker": ticker,
                         "date": dateInUnix, "price": buyingPrice, "quantity": quantity,
-                        "lotValue": buyingPrice * quantity, "type": "EQUITY"
+                        "lotValue": lotVal, "type": "EQUITY",
+                        "desc": desc,
+                        "embeddings": False
                     }
-                    conn.json().set(securityLotPrefix + secLotId, "$", securityLot)
+                    pipeline.json().set(securityLotPrefix + secLotId, "$", securityLot)
+                    count += 1
+                    if count >= 100:
+                        pipeline.execute()
+                        print(f"pipeline command executed for {count}")
+                        count = 0
             except Exception as inst:
                 print(type(inst))
                 print("Exception occurred while generating trading data")
+        if count > 0:
+            pipeline.execute()
 
 
 if __name__ == '__main__':
