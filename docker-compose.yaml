@@ -5,6 +5,7 @@ networks:
 services:
   server:
     image: "abhishekcoder/securities_portfolio_app:server"
+    platform: linux/amd64
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
@@ -20,6 +21,7 @@ services:
       
   price_producer:
     image: "abhishekcoder/securities_portfolio_app:price_producer"
+    platform: linux/amd64
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
@@ -30,6 +32,7 @@ services:
 
   deaggregator:
     image: "abhishekcoder/securities_portfolio_app:deaggregator"
+    platform: linux/amd64
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
@@ -41,6 +44,7 @@ services:
 
   tnx_generator:
     image: "abhishekcoder/securities_portfolio_app:generator"
+    platform: linux/amd64
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
@@ -51,6 +55,7 @@ services:
 
   report:
     image: "abhishekcoder/securities_portfolio_app:report"
+    platform: linux/amd64
     env_file:
       - docker-compose-redis-variables.env
     depends_on:
