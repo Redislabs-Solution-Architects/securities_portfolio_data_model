@@ -59,7 +59,8 @@ def getstats():
 
 @app.route('/portfolio-detail')
 def portfolioDetail():
-    return render_template('portfolio.html', enabledFeatures=enabledFeatures)
+    chat_url = os.getenv('chat_url', 'http://localhost:7860')
+    return render_template('portfolio.html', enabledFeatures=enabledFeatures, chat_url=chat_url)
 
 
 @app.route('/report')
