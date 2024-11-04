@@ -59,7 +59,8 @@ def getstats():
 
 @app.route('/portfolio-detail')
 def portfolioDetail():
-    return render_template('portfolio.html', enabledFeatures=enabledFeatures)
+    chat_url = os.getenv('chat_url', 'http://localhost:7860')
+    return render_template('portfolio.html', enabledFeatures=enabledFeatures, chat_url=chat_url)
 
 
 @app.route('/report')
@@ -473,12 +474,14 @@ def createIndexes():
         #   $.quantity as quantity NUMERIC SORTABLE
         #   $.lotValue as lotValue NUMERIC SORTABLE
         #   $.date as date NUMERIC SORTABLE
+        #   $.embeddings as embeddings TAG
         schema = (TextField("$.accountNo", as_name="accountNo"),
                   TagField("$.ticker", as_name="ticker"),
                   NumericField("$.price", as_name="price", sortable=True),
                   NumericField("$.quantity", as_name="quantity", sortable=True),
                   NumericField("$.lotValue", as_name="lotValue", sortable=True),
-                  NumericField("$.date", as_name="date", sortable=True))
+                  NumericField("$.date", as_name="date", sortable=True),
+                  TagField("$.embeddings", as_name="embeddings"))
         r.ft("idx_trading_security_lot").create_index(schema,
                                                       definition=IndexDefinition(prefix=["trading:securitylot:"],
                                                                                  index_type=IndexType.JSON))

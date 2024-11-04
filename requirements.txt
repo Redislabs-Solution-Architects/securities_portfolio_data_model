@@ -1,7 +1,7 @@
-redis~=5.0.3
+redis~=5.1.1
 faker==14.2.0
 pandas~=2.2.2
-pydantic==1.9.2
+pydantic==2.4.0
 email-validator~=1.2.1
 Flask==3.0.2
 flask-sock==0.5.2

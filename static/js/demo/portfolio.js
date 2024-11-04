@@ -69,7 +69,10 @@ $(document).ready(function() {
 
  });
 
-  
+ $("#chatAI").click(function(){
+        $('#chatAIContainer').modal()
+   });
+
 });
 
 $.extend( $.fn.dataTable.defaults, {
