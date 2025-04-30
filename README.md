@@ -148,7 +148,7 @@ The sequence of steps:
    Execute this script using Docker command:
     
     ```python
-    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/sample_trading_data_model:generator
+    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> -e ACCOUNT_RECORD_COUNT=1000 abhishekcoder/securities_portfolio_app:generator
 
     ```
 
@@ -253,7 +253,7 @@ The component diagram:
    Execute this script using Docker command:
 
     ```python
-    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:price_producer
+    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/securities_portfolio_app:price_producer
     ```
     
 
@@ -263,7 +263,7 @@ The component diagram:
 These dynamic pricing data will be consumed asynchronously by a Streams consumer. The code for streams consumer is present
 in the '/consumer/pricing-deaggregator' folder and written using Java 21 & Spring Boot.
 
-The docker image for the consumer is: `abhishekcoder/sample_trading_data_model:deaggregator`
+The docker image for the consumer is: `abhishekcoder/securities_portfolio_app:deaggregator`
 
 This consumer performs the following responsibilities:
 
@@ -276,7 +276,7 @@ This consumer performs the following responsibilities:
 Docker command to execute processor:
 
 ```python
-docker run -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSWORD> -e TEST_STOCKS=ABCBANK,ABCMOTORS abhishekcoder/sample_trading_data_model:deaggregator
+docker run -e SPRING_REDIS_HOST=<HOST> -e SPRING_REDIS_PORT=<PORT> -e SPRING_REDIS_PASSWORD=<PASSWORD> -e TEST_STOCKS=ABCBANK,ABCMOTORS abhishekcoder/securities_portfolio_app:deaggregator
 ```
 
 Java command to execute the processor:
@@ -344,7 +344,7 @@ The sequence of steps:
    Execute this script using Docker command:
 
     ```python
-    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/sample_trading_data_model:report
+    docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> abhishekcoder/securities_portfolio_app:report
     ```
 
 ******************************************************
@@ -370,7 +370,7 @@ docker run -e HOST=<HOST> -e PORT=<PORT> -e PASSWORD=<PASSWORD> \
             -e notification=True \
             -e transactions=True \
             -e TEST_STOCKS=ABCBANK,ABCMOTORS \
-abhishekcoder/sample_trading_data_model:server
+abhishekcoder/securities_portfolio_app:server
 ```
 
 
